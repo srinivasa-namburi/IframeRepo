@@ -7,10 +7,10 @@ import {getReference} from "@luciad/ria/reference/ReferenceProvider.js";
 import {FeatureLayer} from "@luciad/ria/view/feature/FeatureLayer.js";
 import {MemoryStore} from "@luciad/ria/model/store/MemoryStore.js";
 import {FeatureModel} from "@luciad/ria/model/feature/FeatureModel.js";
-import {createBounds,  createPolyline} from "@luciad/ria/shape/ShapeFactory.js";
+import {createBounds, createPolyline} from "@luciad/ria/shape/ShapeFactory.js";
 import {Feature} from "@luciad/ria/model/feature/Feature.js";
 import {AxisPainter} from "./utils/AxisPainter.ts";
-import {loadHSPC} from "./utils/HSPCLoader.ts";
+import {loadHSPC, loadOGC3dTiles} from "./utils/HSPCLoader.ts";
 import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
 import {loadLabels} from "./utils/LabelLoader.ts";
 import {ViewToolIBar} from "../buttons/ViewToolIBar.tsx";
@@ -19,10 +19,12 @@ const defaultProjection = "LUCIAD:XYZ";
 
 // Get reference from URL query params or default to EPSG:4978
 const params = new URLSearchParams(window.location.search);
-const referenceIdentifier = params.get("reference") || defaultProjection;
+const referenceIdentifier = defaultProjection;
 
 const hspcUrl = params.get("hspc") || null;
-const labelsUrl= params.get("labels") || null;
+const ogc3dTilesUrl = params.get("3dtiles") || null;
+
+const labelsUrl = params.get("labels") || null;
 const reference = getReference(referenceIdentifier);
 
 interface Props {
@@ -36,18 +38,36 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
 
     useEffect(() => {
         if (divRef.current) {
-            mapRef.current = new WebGLMap(divRef.current, { reference });
+            mapRef.current = new WebGLMap(divRef.current, {reference});
             createAxes();
 
             if (hspcUrl) {
-                loadHSPC(hspcUrl).then(layer=>{
+                loadHSPC(hspcUrl).then(layer => {
                     try {
                         //Add the model to the map
                         mapRef.current?.layerTree.addChild(layer);
                         // Zoom to the point cloud location
-                        mapRef.current?.mapNavigator.fit({ bounds: layer.bounds, animate: false });
+                        mapRef.current?.mapNavigator.fit({bounds: layer.bounds, animate: false});
                         activeLayer.current = layer;
-                        if (labelsUrl) loadLabels(labelsUrl).then(labelsLayer=>{
+                        if (labelsUrl) loadLabels(labelsUrl).then(labelsLayer => {
+                            mapRef.current?.layerTree.addChild(labelsLayer);
+                        })
+                        if (typeof props.onShowTime === "function") props.onShowTime();
+                    } catch (_e) {
+                        if (mapRef.current && !layer.model.reference.equals(mapRef.current.reference)) {
+                            console.log(`"Map and data are not in the same reference. Layer is in: ${layer.model.reference.identifier}`)
+                        }
+                    }
+                });
+            } else if (ogc3dTilesUrl) {
+                loadOGC3dTiles(ogc3dTilesUrl).then(layer => {
+                    try {
+                        //Add the model to the map
+                        mapRef.current?.layerTree.addChild(layer);
+                        // Zoom to the point cloud location
+                        mapRef.current?.mapNavigator.fit({bounds: layer.bounds, animate: false});
+                        activeLayer.current = layer;
+                        if (labelsUrl) loadLabels(labelsUrl).then(labelsLayer => {
                             mapRef.current?.layerTree.addChild(labelsLayer);
                         })
                         if (typeof props.onShowTime === "function") props.onShowTime();
@@ -59,7 +79,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                 });
             }
         }
-        return ()=>{
+        return () => {
             if (mapRef.current) mapRef.current.destroy();
             mapRef.current = null;
         }
@@ -79,24 +99,21 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
         const targetModel = layer.model;
 
         const axes = [
-            { axis: "x", from: [-100, 0, 0], to: [100, 0, 0], id: "x" },
-            { axis: "y", from: [0, -100, 0], to: [0, 100, 0], id: "y" },
-            { axis: "z", from: [0, 0, -100], to: [0, 0, 100], id: "z" }
+            {axis: "x", from: [-100, 0, 0], to: [100, 0, 0], id: "x"},
+            {axis: "y", from: [0, -100, 0], to: [0, 100, 0], id: "y"},
+            {axis: "z", from: [0, 0, -100], to: [0, 0, 100], id: "z"}
         ];
 
-        for (const { axis, from, to, id } of axes) {
+        for (const {axis, from, to, id} of axes) {
             const line = createPolyline(reference, [from as never, to as never]);
-            const feature = new Feature(line, { axis }, id);
+            const feature = new Feature(line, {axis}, id);
             targetModel.add(feature);
         }
 
         const plane = createBounds(reference, [-100, 200, -100, 200, 0, 0]);
-        const featurePlane = new Feature(plane, { axis: "x" }, "plane-x");
+        const featurePlane = new Feature(plane, {axis: "x"}, "plane-x");
         targetModel.add(featurePlane);
-
     }
-
-
 
     return (
         <div className="LuciadMap">
