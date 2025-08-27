@@ -10,6 +10,7 @@ import type {LabelCanvas} from "@luciad/ria/view/style/LabelCanvas.js";
 import type {Icon3DStyle} from "@luciad/ria/view/style/Icon3DStyle.js";
 import {create3DCylinder} from "./meshes/simple3DMeshes/Simple3DMeshFactory.ts";
 
+// @ts-ignore
 const labelCssStyle =`"
     display: inline-block;
     color: #ffffff;
@@ -24,7 +25,7 @@ const labelCssStyle =`"
     text-align: center;
     box-shadow: 0 0 4px rgba(0,0,0,0.6);
     pointer-events: none;
-  "`
+  "`;
 
 const labelStyleCssRobocop = `"
   display: inline-block;
@@ -47,6 +48,7 @@ const labelStyleCssRobocop = `"
   white-space: nowrap;
     "`
 
+// @ts-ignore
 const labelStyleCssTerminator = `"
   display: inline-block;
   font-family: 'OCR A Std', monospace;

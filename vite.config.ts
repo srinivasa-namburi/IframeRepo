@@ -20,4 +20,5 @@ const hexLoader = {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [hexLoader, react()],
+  base: "./", // <-- makes the app relative to the current path`
 })

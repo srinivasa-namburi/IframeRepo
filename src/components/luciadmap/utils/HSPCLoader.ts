@@ -3,13 +3,27 @@ import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
 import type {PointCloudStyle} from "@luciad/ria/view/style/PointCloudStyle.js";
 import {ScalingMode} from "@luciad/ria/view/style/ScalingMode.js";
 import {OGC3DTilesModel} from "@luciad/ria/model/tileset/OGC3DTilesModel.js";
+import type {HttpRequestHeaders} from "@luciad/ria/util/HttpRequestOptions.js";
 
-export function loadHSPC(url: string) {
+interface LoadingOptions {
+    requestHeaders?: HttpRequestHeaders;
+    credentials?: boolean
+}
+
+export function getRequestInitValues(params: URLSearchParams): RequestInit | null {
+    const encoded = params.get("requestInit");
+    if (!encoded) return {} as RequestInit;
+    // Decode base64 safely
+    const decoded = atob(encoded);
+    return JSON.parse(decoded) as RequestInit;
+}
+
+export function loadHSPC(url: string, o: RequestInit | null) {
+    const options = mapRequestInitToLoadingOptions(o);
     return new Promise<TileSet3DLayer>((resolve, reject) => {
         const style = createPointStyle();
         // Create the model
-        try {
-            HSPCTilesModel.create(url, {}).then((model:HSPCTilesModel)=>{
+            HSPCTilesModel.create(url, options).then((model:HSPCTilesModel)=>{
                 //Create a layer for the model
                 const layer = new TileSet3DLayer(model, {
                     label: "HSPC Layer",
@@ -18,32 +32,51 @@ export function loadHSPC(url: string) {
                 // Set the style
                 layer.pointCloudStyle = style.pointCloudStyle;
                 resolve(layer)
+            }).catch(()=>{
+                reject();
             });
-        } catch (_err) {
-            reject();
-        }
     })
 }
 
-export function loadOGC3dTiles(url: string) {
+export function loadOGC3dTiles(url: string, o: RequestInit | null) {
+    const options = mapRequestInitToLoadingOptions(o);
     return new Promise<TileSet3DLayer>((resolve, reject) => {
         const style = createPointStyle();
         // Create the model
-        try {
-            OGC3DTilesModel.create(url, {}).then((model:OGC3DTilesModel)=>{
-                //Create a layer for the model
-                const layer = new TileSet3DLayer(model, {
-                    label: "OGC 3D Tiles Layer",
-                });
-
-                // Set the style
-                layer.pointCloudStyle = style.pointCloudStyle;
-                resolve(layer)
+        OGC3DTilesModel.create(url, options).then((model:OGC3DTilesModel)=>{
+            //Create a layer for the model
+            const layer = new TileSet3DLayer(model, {
+                label: "OGC 3D Tiles Layer",
             });
-        } catch (_err) {
+
+            // Set the style
+            layer.pointCloudStyle = style.pointCloudStyle;
+            resolve(layer)
+        }).catch(()=>{
             reject();
-        }
+        });
     })
+}
+
+function mapRequestInitToLoadingOptions(r: RequestInit | null | undefined): LoadingOptions {
+    if (!r) return {
+        requestHeaders: {},
+        credentials: false
+    }
+    const headers: HttpRequestHeaders | undefined = r.headers
+        ? r.headers instanceof Headers
+            ? Object.fromEntries(r.headers.entries())
+            : Array.isArray(r.headers)
+                ? Object.fromEntries(r.headers)
+                : r.headers
+        : undefined;
+
+    const credentials = r.credentials === "include";
+
+    return {
+        requestHeaders: headers,
+        credentials,
+    };
 }
 
 //  Defines a style to style a PointCloud

@@ -1,31 +1,41 @@
-import './App.scss'
+import './App.scss';
 import * as React from "react";
-import {LuciadMap} from "./components/luciadmap/LuciadMap.tsx";
-import {FullscreenButton} from "./components/fullscreen/FullscreenButton.tsx";
-import {useRef} from "react";
+import { LuciadMap } from "./components/luciadmap/LuciadMap.tsx";
+import { FullscreenButton } from "./components/fullscreen/FullscreenButton.tsx";
+import { Attribution } from "./components/attribution/Attribution.tsx";
+import { useRef, useState } from "react";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
 const theme = createTheme({
     palette: {
-        mode: 'dark', // or 'dark'
+        mode: 'dark',
     },
 });
 
 const App: React.FC = () => {
-    const appRef = useRef<HTMLDivElement | null>(null);
+    const contentRef = useRef<HTMLDivElement | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const onShowTime = () => {
-        // Trigger fade-in on mount
-        requestAnimationFrame(() => {
-            if (appRef.current) {
-                appRef.current.style.opacity = "1";
-            }
-        });
+    const onShowTime = (status: boolean) => {
+        if (status) {
+            setLoading(false);
+            setError(null);
+            // fade in the content
+            requestAnimationFrame(() => {
+                if (contentRef.current) {
+                    contentRef.current.style.opacity = "1";
+                }
+            });
+        } else {
+            setLoading(false);
+            setError("Failed to load the data. Verify the data url");
+        }
     };
 
     const handleFullscreen = () => {
-        const elem = document.documentElement; // fullscreen the whole page
+        const elem = document.documentElement;
         if (!document.fullscreenElement) {
             elem.requestFullscreen().catch(err => console.error(err));
         } else {
@@ -34,14 +44,34 @@ const App: React.FC = () => {
     };
 
     return (
-    <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <div className="App" ref={appRef}>
-            <LuciadMap onShowTime={onShowTime}/>
-            <FullscreenButton onClick={handleFullscreen} />
-        </div>
-    </ThemeProvider>
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <div className="App">
+                {/* Loading or error overlay */}
+                {loading && (
+                    <div className="LoadingOverlay">
+                        <span className="LoadingText">
+                            {error ? error : "Loading"}
+                        </span>
+                    </div>
+                )}
+
+                {/* Main app content that fades in */}
+                <div className="AppContent" ref={contentRef} style={{ opacity: 0 }}>
+                    <LuciadMap onShowTime={onShowTime} />
+                    <FullscreenButton onClick={handleFullscreen} />
+                    <Attribution text="Green Cubes" url="https://www.google.com" />
+                </div>
+                {(!loading && error) && (
+                    <div className="Errorverlay">
+                        <span>
+                            {error}
+                        </span>
+                    </div>
+                )}
+            </div>
+        </ThemeProvider>
     );
 }
 
-export default App
+export default App;

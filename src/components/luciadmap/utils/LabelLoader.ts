@@ -11,8 +11,9 @@ const reference = getReference(defaultProjection);
 
 export async function loadLabels(
     url: string,
-    options?: RequestInit
+    inputOptions?: RequestInit | null
 ): Promise<FeatureLayer> {
+    const options = inputOptions ? inputOptions : {};
     try {
         const defaultOptions: RequestInit = {
             method: "GET",

@@ -3,7 +3,6 @@ import {createCartesianGeodesy} from "@luciad/ria/geodesy/GeodesyFactory.js";
 import {getReference} from "@luciad/ria/reference/ReferenceProvider.js";
 import {AnimationManager} from "@luciad/ria/view/animation/AnimationManager.js";
 import {QuickLookAnimation} from "./QuickLookAnimation.ts";
-import {LocationMode} from "@luciad/ria/transformation/LocationMode.js";
 import {createPoint} from "@luciad/ria/shape/ShapeFactory.js";
 import type {WebGLMap} from "@luciad/ria/view/WebGLMap.js";
 
