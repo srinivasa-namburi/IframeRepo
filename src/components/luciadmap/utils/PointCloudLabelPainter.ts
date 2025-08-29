@@ -102,8 +102,9 @@ const labelCssStyleRobot =`"
 // };
 
 const IconStyle = (diameter: number): Icon3DStyle => ({
-    mesh: create3DCylinder(diameter / 2 / 5, 20, 20),
-    color: "rgba(255, 103, 0, 0.75)", // semi-transparent red  ff80ab
+    mesh: create3DCylinder(diameter / 3, 0.10, 20),
+   color: "rgba(255, 103, 0, 0.75)", // semi-transparent red  ff80ab
+   // color: "rgba(255, 255, 255, 0.75)", // semi-transparent red  ff80ab
     legacyAxis: false,
 });
 
