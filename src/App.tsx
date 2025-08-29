@@ -1,10 +1,10 @@
 import './App.scss';
 import * as React from "react";
-import { LuciadMap } from "./components/luciadmap/LuciadMap.tsx";
-import { FullscreenButton } from "./components/fullscreen/FullscreenButton.tsx";
-import { Attribution } from "./components/attribution/Attribution.tsx";
-import { useRef, useState } from "react";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import {LuciadMap} from "./components/luciadmap/LuciadMap.tsx";
+import {FullscreenButton} from "./components/fullscreen/FullscreenButton.tsx";
+import {Attribution} from "./components/attribution/Attribution.tsx";
+import {useRef, useState} from "react";
+import {ThemeProvider, createTheme} from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
 const theme = createTheme({
@@ -18,7 +18,7 @@ const App: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const onShowTime = (status: boolean) => {
+    const onShowTime = (status: boolean, errorMessage?:string) => {
         if (status) {
             setLoading(false);
             setError(null);
@@ -30,7 +30,8 @@ const App: React.FC = () => {
             });
         } else {
             setLoading(false);
-            setError("Failed to load the data. Verify the data url");
+            if (errorMessage) setError(errorMessage);
+            else setError("Failed to load the data. Verify the data url");
         }
     };
 
@@ -45,7 +46,7 @@ const App: React.FC = () => {
 
     return (
         <ThemeProvider theme={theme}>
-            <CssBaseline />
+            <CssBaseline/>
             <div className="App">
                 {/* Loading or error overlay */}
                 {loading && (
@@ -57,10 +58,10 @@ const App: React.FC = () => {
                 )}
 
                 {/* Main app content that fades in */}
-                <div className="AppContent" ref={contentRef} style={{ opacity: 0 }}>
-                    <LuciadMap onShowTime={onShowTime} />
-                    <FullscreenButton onClick={handleFullscreen} />
-                    <Attribution text="Green Cubes" url="https://www.google.com" />
+                <div className="AppContent" ref={contentRef} style={{opacity: 0}}>
+                    <LuciadMap onShowTime={onShowTime}/>
+                    <FullscreenButton onClick={handleFullscreen}/>
+                    <Attribution text="Green Cubes" url="https://www.google.com"/>
                 </div>
                 {(!loading && error) && (
                     <div className="Errorverlay">

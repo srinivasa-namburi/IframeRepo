@@ -52,7 +52,7 @@ function transformDataToFeatures(data: any[]) {
     return data.map(
         (item, index) =>
             new Feature(
-                createPoint(reference, [item.X, item.Y, item["Base Z"]]),
+                createPoint(reference, [item.X, item.Y, item["Center Z"]]),
                 {
                     diameter: item.Diameter,
                     axisZ: item["Axis Z"],

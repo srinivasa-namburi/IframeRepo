@@ -39,7 +39,7 @@ const LOCAL_STORAGE_BG_KEY = "point-cloud-viewer-background";
 
 
 interface Props {
-    onShowTime?: (status: boolean) => void;
+    onShowTime?: (status: boolean, errorMessage?: string) => void;
 }
 
 
@@ -104,6 +104,8 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                     if (typeof props.onShowTime === "function") props.onShowTime(false);
                     console.log(`Data unreachable`)
                 });
+            } else {
+                if (typeof props.onShowTime === "function") props.onShowTime(false, "Missing hspc or 3dtiles URL");
             }
         }
         return () => {
