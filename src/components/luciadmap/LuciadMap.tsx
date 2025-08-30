@@ -14,7 +14,7 @@ import {getRequestInitValues, loadHSPC, loadOGC3dTiles} from "./utils/HSPCLoader
 import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
 import {loadLabels} from "./utils/LabelLoader.ts";
 import {ViewToolIBar} from "../buttons/ViewToolIBar.tsx";
-import {type BackgroundColor, ColorPicker, findColor} from "../colorpicker/ColorPicker.tsx";
+import {type BackgroundColor, ColorPicker, ColorPickerFindColor} from "../colorpicker/ColorPicker.tsx";
 import {
     createEquirectangularImagery,
 } from "@luciad/ria/view/EnvironmentMapEffect.js";
@@ -46,37 +46,18 @@ const AvailableBackgroundColors: BackgroundColor[] = [
 
 const LOCAL_STORAGE_BG_KEY = "point-cloud-viewer-background";
 
-
 interface Props {
     onShowTime?: (status: boolean, errorMessage?: string) => void;
 }
 
-
 export const LuciadMap: React.FC<Props> = (props: Props) => {
     const storedColor = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
 
-    const [bgColor, setBgColor] = React.useState<BackgroundColor>(findColor(AvailableBackgroundColors, storedColor));
+    const [bgColor, setBgColor] = React.useState<BackgroundColor>(ColorPickerFindColor(AvailableBackgroundColors, storedColor));
 
     const divRef = useRef<HTMLDivElement | null>(null);
     const mapRef = useRef<WebGLMap | null>(null);
     const activeLayer = useRef<TileSet3DLayer | null>(null);
-
-    const createSky = (map: WebGLMap | null, colorId: string) => {
-        if (!map) return;
-
-        if (colorId === "$sky") {
-            map.effects.environmentMap = {
-                skybox: {
-                    imagery: createEquirectangularImagery("./background/skybox_default.9bbc03ab.jpg")
-                },
-            };
-        } else {
-            map.effects.environmentMap = {
-                skybox: null
-            };
-        }
-    }
-
 
     useEffect(() => {
         if (divRef.current) {
@@ -98,7 +79,8 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                             if (typeof props.onShowTime === "function") props.onShowTime(false);
                         })
                         if (typeof props.onShowTime === "function") props.onShowTime(true);
-                    } catch (_e) {
+                    }  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    catch (_e) {
                         if (typeof props.onShowTime === "function") props.onShowTime(false);
                         if (mapRef.current && !layer.model.reference.equals(mapRef.current.reference)) {
                             console.log(`"Map and data are not in the same reference. Layer is in: ${layer.model.reference.identifier}`)
@@ -120,7 +102,8 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                             mapRef.current?.layerTree.addChild(labelsLayer);
                         })
                         if (typeof props.onShowTime === "function") props.onShowTime(true);
-                    } catch (_e) {
+                    } // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    catch (_e) {
                         if (mapRef.current && !layer.model.reference.equals(mapRef.current.reference)) {
                             console.log(`"Map and data are not in the same reference. Layer is in: ${layer.model.reference.identifier}`)
                         }
@@ -146,6 +129,22 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
         localStorage.setItem(LOCAL_STORAGE_BG_KEY, color.id);
     };
 
+
+    const createSky = (map: WebGLMap | null, colorId: string) => {
+        if (!map) return;
+
+        if (colorId === "$sky") {
+            map.effects.environmentMap = {
+                skybox: {
+                   imagery: createEquirectangularImagery("./background/skybox_default.9bbc03ab.jpg")
+                },
+            };
+        } else {
+            map.effects.environmentMap = {
+                skybox: null
+            };
+        }
+    }
 
     const createAxes = () => {
         if (!mapRef.current) return;

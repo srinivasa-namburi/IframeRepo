@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import FormatColorFillIcon from "@mui/icons-material/FormatColorFill";
+import WallpaperIcon from "@mui/icons-material/Wallpaper";
 import { Box } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 
@@ -18,7 +18,8 @@ interface ColorPickerProps {
     currentColor?: BackgroundColor;
 }
 
-export function findColor(availableColors: BackgroundColor[], storedColor: string | null) {
+// eslint-disable-next-line react-refresh/only-export-components
+export function ColorPickerFindColor(availableColors: BackgroundColor[], storedColor: string | null) {
     const color = availableColors.find(a=> a.id === storedColor);
     return color ? color : availableColors[3];
 }
@@ -32,7 +33,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ colors, onChange, curr
     const handleClose = () => setAnchorEl(null);
 
     const handleColorSelect = (color: string) => {
-        onChange(findColor(colors, color));
+        onChange(ColorPickerFindColor(colors, color));
         handleClose();
     };
 
@@ -55,7 +56,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ colors, onChange, curr
                 onClick={handleClick}
                 title="Choose Background Color"
             >
-                <FormatColorFillIcon fontSize="large" />
+                <WallpaperIcon fontSize="large" />
             </Box>
 
             {/* Color menu */}
@@ -96,7 +97,6 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ colors, onChange, curr
                                 }}
                             />
                         }
-
                     </MenuItem>
                 ))}
             </Menu>
