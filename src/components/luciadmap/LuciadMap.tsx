@@ -36,11 +36,11 @@ const requestInit = getRequestInitValues(params);
 const reference = getReference(referenceIdentifier);
 
 const AvailableBackgroundColors: BackgroundColor[] = [
-    { value: "#000000", label: "Black", id: "#000000" },
-    { value: "#1a1a2e", label: "Midnight Blue", id: "#1a1a2e" },
-    { value: "#003366", label: "Dark Blue", id: "#003366" },
-    { value: "#2e2e3e", label: "Charcoal Blue", id: "#2e2e3e" },
-    { value: "#4d4d5e", label: "Slate Gray", id: "#4d4d5e" },
+    { value: "#1E1E1E", label: "Dark Gray", id: "#1E1E1E" },        // High contrast for greens
+    { value: "#2E2E2E", label: "Charcoal", id: "#2E2E2E" },         // Neutral dark gray
+    { value: "#7D7D7D", label: "Medium Gray", id: "#7D7D7D" },      // True neutral mid-tone gray
+    { value: "#F0F4FF", label: "Soft Blue", id: "#F0F4FF" },        // Light cool, separates green leaves
+    { value: "#FAF9F6", label: "Light Beige", id: "#FAF9F6" },
     {value: "#000000", label: "Sky", id: "$sky"},
 ];
 

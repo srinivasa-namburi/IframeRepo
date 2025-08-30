@@ -21,7 +21,7 @@ interface ColorPickerProps {
 // eslint-disable-next-line react-refresh/only-export-components
 export function ColorPickerFindColor(availableColors: BackgroundColor[], storedColor: string | null) {
     const color = availableColors.find(a=> a.id === storedColor);
-    return color ? color : availableColors[3];
+    return color ? color : availableColors[0];
 }
 
 
