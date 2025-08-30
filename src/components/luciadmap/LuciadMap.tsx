@@ -14,7 +14,11 @@ import {getRequestInitValues, loadHSPC, loadOGC3dTiles} from "./utils/HSPCLoader
 import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
 import {loadLabels} from "./utils/LabelLoader.ts";
 import {ViewToolIBar} from "../buttons/ViewToolIBar.tsx";
-import {ColorPicker} from "../colorpicker/ColorPicker.tsx";
+import {type BackgroundColor, ColorPicker, findColor} from "../colorpicker/ColorPicker.tsx";
+import {
+    createEquirectangularImagery,
+} from "@luciad/ria/view/EnvironmentMapEffect.js";
+
 
 const defaultProjection = "LUCIAD:XYZ";
 
@@ -31,8 +35,13 @@ const requestInit = getRequestInitValues(params);
 
 const reference = getReference(referenceIdentifier);
 
-const AvailableBackgroundColors = [
-    "#000000", "#1a1a2e", "#003366", "#2e2e3e", "#4d4d5e"
+const AvailableBackgroundColors: BackgroundColor[] = [
+    { value: "#000000", label: "Black", id: "#000000" },
+    { value: "#1a1a2e", label: "Midnight Blue", id: "#1a1a2e" },
+    { value: "#003366", label: "Dark Blue", id: "#003366" },
+    { value: "#2e2e3e", label: "Charcoal Blue", id: "#2e2e3e" },
+    { value: "#4d4d5e", label: "Slate Gray", id: "#4d4d5e" },
+    {value: "#000000", label: "Sky", id: "$sky"},
 ];
 
 const LOCAL_STORAGE_BG_KEY = "point-cloud-viewer-background";
@@ -43,21 +52,37 @@ interface Props {
 }
 
 
-
-
 export const LuciadMap: React.FC<Props> = (props: Props) => {
     const storedColor = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
 
-    const [bgColor, setBgColor] = React.useState<string>(storedColor || AvailableBackgroundColors[3]);
+    const [bgColor, setBgColor] = React.useState<BackgroundColor>(findColor(AvailableBackgroundColors, storedColor));
 
     const divRef = useRef<HTMLDivElement | null>(null);
     const mapRef = useRef<WebGLMap | null>(null);
     const activeLayer = useRef<TileSet3DLayer | null>(null);
 
+    const createSky = (map: WebGLMap | null, colorId: string) => {
+        if (!map) return;
+
+        if (colorId === "$sky") {
+            map.effects.environmentMap = {
+                skybox: {
+                    imagery: createEquirectangularImagery("./background/skybox_default.9bbc03ab.jpg")
+                },
+            };
+        } else {
+            map.effects.environmentMap = {
+                skybox: null
+            };
+        }
+    }
+
+
     useEffect(() => {
         if (divRef.current) {
             mapRef.current = new WebGLMap(divRef.current, {reference});
             createAxes();
+            createSky(mapRef.current, bgColor.id);
 
             if (hspcUrl) {
                 loadHSPC(hspcUrl, requestInit).then(layer => {
@@ -115,10 +140,12 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     }, []);
 
     // Update localStorage whenever the user changes the color
-    const handleColorChange = (color: string) => {
+    const handleColorChange = (color: BackgroundColor) => {
         setBgColor(color);
-        localStorage.setItem(LOCAL_STORAGE_BG_KEY, color);
+        createSky(mapRef.current, color.id)
+        localStorage.setItem(LOCAL_STORAGE_BG_KEY, color.id);
     };
+
 
     const createAxes = () => {
         if (!mapRef.current) return;
@@ -152,7 +179,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
 
     return (
         <div className="LuciadMap">
-            <div className="LuciadMapElement" ref={divRef} style={{backgroundColor: bgColor}}></div>
+            <div className="LuciadMapElement" ref={divRef} style={{backgroundColor: bgColor.value}}></div>
             <div style={{ position: "fixed", top: 16, left: 16, zIndex: 1000 }}>
                 <ColorPicker colors={AvailableBackgroundColors} currentColor={bgColor} onChange={handleColorChange} />
             </div>

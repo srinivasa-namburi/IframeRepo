@@ -5,11 +5,24 @@ import FormatColorFillIcon from "@mui/icons-material/FormatColorFill";
 import { Box } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 
-interface ColorPickerProps {
-    colors: string[];
-    onChange: (color: string) => void;
-    currentColor?: string;
+
+export interface BackgroundColor {
+    value: string;
+    label: string;
+    id: string;
 }
+
+interface ColorPickerProps {
+    colors: BackgroundColor[];
+    onChange: (color: BackgroundColor) => void;
+    currentColor?: BackgroundColor;
+}
+
+export function findColor(availableColors: BackgroundColor[], storedColor: string | null) {
+    const color = availableColors.find(a=> a.id === storedColor);
+    return color ? color : availableColors[3];
+}
+
 
 export const ColorPicker: React.FC<ColorPickerProps> = ({ colors, onChange, currentColor }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -19,7 +32,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ colors, onChange, curr
     const handleClose = () => setAnchorEl(null);
 
     const handleColorSelect = (color: string) => {
-        onChange(color);
+        onChange(findColor(colors, color));
         handleClose();
     };
 
@@ -49,33 +62,41 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ colors, onChange, curr
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                 {colors.map((color) => (
                     <MenuItem
-                        key={color}
-                        onClick={() => handleColorSelect(color)}
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            gap: 1,
-                        }}
+                        key={color.id}
+                        onClick={() => handleColorSelect(color.id)}
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
                     >
-                        {/* Checkmark on the left if selected */}
-                        <Box sx={{ width: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            {color === currentColor && <CheckIcon fontSize="small" color="primary" />}
+                        {/* Left group: check + label */}
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Box sx={{ width: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                {color === currentColor && <CheckIcon fontSize="small" color="primary" />}
+                            </Box>
+                            <span>{color.label}</span>
                         </Box>
 
-                        {/* Color code text */}
-                        <span>{color}</span>
-
-                        {/* Color preview square on the right */}
-                        <Box
+                        {/* Right: color square */}
+                        { color.id==="$sky" ? <Box
                             sx={{
                                 width: 24,
                                 height: 24,
-                                bgcolor: color,
+                                background: "linear-gradient(to bottom, #111111 0%, #333333 33%, #888888 40%, #222222 50%, #000000 100%)",
                                 border: "1px solid #ccc",
                                 borderRadius: "4px",
+                                marginLeft: "auto", // pushes it all the way to the right
                             }}
-                        />
+                        /> :
+                            <Box
+                                sx={{
+                                    width: 24,
+                                    height: 24,
+                                    bgcolor: color.value,
+                                    border: "1px solid #ccc",
+                                    borderRadius: "4px",
+                                    marginLeft: "auto", // pushes it all the way to the right
+                                }}
+                            />
+                        }
+
                     </MenuItem>
                 ))}
             </Menu>
