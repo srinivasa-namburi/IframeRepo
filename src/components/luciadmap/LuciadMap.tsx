@@ -18,7 +18,14 @@ import {type BackgroundColor, ColorPicker, ColorPickerFindColor} from "../colorp
 import {
     createEquirectangularImagery,
 } from "@luciad/ria/view/EnvironmentMapEffect.js";
-
+import ROTATION_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_circles.glb";
+import PAN_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_arrows.glb";
+import SCROLL_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_octhedron.glb";
+import {NavigationKeysMode} from "ria-toolbox/libs/scene-navigation/KeyNavigationSupport";
+import {SceneNavigationControllerV2} from "./controllers/scenenavigation/SceneNavigationControllerV2.ts";
+import {NavigationGizmo} from "ria-toolbox/libs/scene-navigation/NavigationGizmo";
+import {NavigationType} from "ria-toolbox/libs/scene-navigation/GestureUtil";
+import {DefaultController} from "@luciad/ria/view/controller/DefaultController.js";
 
 const defaultProjection = "LUCIAD:XYZ";
 
@@ -78,6 +85,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                         }).catch(()=>{
                             if (typeof props.onShowTime === "function") props.onShowTime(false);
                         })
+                        restrictBounds3D(mapRef.current, layer);
                         if (typeof props.onShowTime === "function") props.onShowTime(true);
                     }  // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     catch (_e) {
@@ -101,6 +109,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                         if (labelsUrl) loadLabels(labelsUrl, requestInit).then(labelsLayer => {
                             mapRef.current?.layerTree.addChild(labelsLayer);
                         })
+                        restrictBounds3D(mapRef.current, layer);
                         if (typeof props.onShowTime === "function") props.onShowTime(true);
                     } // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     catch (_e) {
@@ -187,4 +196,60 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     )
 }
 
+
+function restrictBounds3D(map: WebGLMap | null, layer: TileSet3DLayer) {
+    if (!map) return;
+    if (!layer.bounds) return;
+
+    let limitBounds = layer.bounds.copy();
+    let targetBounds = layer.bounds.copy();
+    const scale = 5;
+    const targetScale = 0.025;
+    if (limitBounds.depth === 0) {
+        limitBounds = createBounds(limitBounds.reference, [
+            limitBounds.x - (scale - 1) * limitBounds.width / 2, limitBounds.width * scale,
+            limitBounds.y - (scale - 1) * limitBounds.height / 2, limitBounds.height * scale,
+            -10000, 20000
+        ])
+        targetBounds = createBounds(targetBounds.reference, [
+            targetBounds.x - (targetScale - 1) * targetBounds.width / 2, targetBounds.width * targetScale,
+            targetBounds.y - (targetScale - 1) * targetBounds.height / 2, targetBounds.height * targetScale,
+            -10000, 20000
+        ]);
+    } else {
+        limitBounds = createBounds(limitBounds.reference, [
+            limitBounds.x - (scale - 1) * limitBounds.width / 2, limitBounds.width * scale,
+            limitBounds.y - (scale - 1) * limitBounds.height / 2, limitBounds.height * scale,
+            limitBounds.z - ((scale*2) - 1) * limitBounds.depth / 2, limitBounds.depth * scale *2
+        ]);
+        targetBounds = createBounds(targetBounds.reference, [
+            targetBounds.x - (targetScale - 1) * targetBounds.width / 2, targetBounds.width * targetScale,
+            targetBounds.y - (targetScale - 1) * targetBounds.height / 2, targetBounds.height * targetScale,
+            targetBounds.z - ((targetScale*2) - 1) * targetBounds.depth / 2, targetBounds.depth * targetScale *2
+        ]);
+    }
+
+
+    map.mapNavigator.fit({bounds: targetBounds, animate: false});
+
+    // Declare the gizmos to use for the different navigation types.
+    const gizmos = {
+        [NavigationType.ROTATION]: new NavigationGizmo(ROTATION_GLB),
+        [NavigationType.PAN]: new NavigationGizmo(PAN_GLB),
+        [NavigationType.ZOOM]: new NavigationGizmo(SCROLL_GLB, { sizeInPixels: 40 })
+    };
+    // Create a controller with varying options.
+    const navigateController = new SceneNavigationControllerV2(gizmos, limitBounds, {
+        navigationMode: NavigationKeysMode.TANGENT_FORWARD, // navigate along camera paths
+        defaultSpeed: 8, // ~28km/h
+        allowZoomOnClick: true, // clicking on a spot zooms in on to that location by a set fraction
+        useZoomAnimations: false, // don't use smooth animations when zooming or out
+        fasterMultiplier: 2, // go two times as fast when shift is pressed
+        slowerMultiplier: 0.5, // go only half as fast when space is pressed
+        invertButtons: true
+    });
+
+    map.defaultController = new DefaultController({ navigateController });
+
+}
 

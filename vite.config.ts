@@ -19,6 +19,7 @@ const hexLoader = {
 
 // https://vite.dev/config/
 export default defineConfig({
+  assetsInclude: ["**/*.glb"], // tell Vite to treat .glb as assets
   plugins: [hexLoader, react()],
   base: "./", // <-- makes the app relative to the current path`
 })
