@@ -14,7 +14,7 @@ import {getRequestInitValues, loadHSPC, loadOGC3dTiles} from "./utils/HSPCLoader
 import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
 import {loadLabels} from "./utils/LabelLoader.ts";
 import {ViewToolIBar} from "../buttons/ViewToolIBar.tsx";
-import {type BackgroundColor, ColorPicker, ColorPickerFindColor} from "../colorpicker/ColorPicker.tsx";
+import {type BackgroundColor, ColorPickerFindColor} from "../colorpicker/ColorPicker.tsx";
 import {
     createEquirectangularImagery,
 } from "@luciad/ria/view/EnvironmentMapEffect.js";
@@ -51,16 +51,16 @@ const AvailableBackgroundColors: BackgroundColor[] = [
     {value: "#000000", label: "Sky", id: "$sky"},
 ];
 
-const LOCAL_STORAGE_BG_KEY = "point-cloud-viewer-background";
+// const LOCAL_STORAGE_BG_KEY = "point-cloud-viewer-background";
 
 interface Props {
     onShowTime?: (status: boolean, errorMessage?: string) => void;
 }
 
 export const LuciadMap: React.FC<Props> = (props: Props) => {
-    const storedColor = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
-
-    const [bgColor, setBgColor] = React.useState<BackgroundColor>(ColorPickerFindColor(AvailableBackgroundColors, storedColor));
+    // const storedColor = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
+    const storedColor = "$sky";
+    const [bgColor, /*setBgColor*/] = React.useState<BackgroundColor>(ColorPickerFindColor(AvailableBackgroundColors, storedColor));
 
     const divRef = useRef<HTMLDivElement | null>(null);
     const mapRef = useRef<WebGLMap | null>(null);
@@ -132,11 +132,11 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     }, []);
 
     // Update localStorage whenever the user changes the color
-    const handleColorChange = (color: BackgroundColor) => {
-        setBgColor(color);
-        createSky(mapRef.current, color.id)
-        localStorage.setItem(LOCAL_STORAGE_BG_KEY, color.id);
-    };
+    // const handleColorChange = (color: BackgroundColor) => {
+    //     setBgColor(color);
+    //     createSky(mapRef.current, color.id)
+    //     localStorage.setItem(LOCAL_STORAGE_BG_KEY, color.id);
+    // };
 
 
     const createSky = (map: WebGLMap | null, colorId: string) => {
@@ -188,9 +188,9 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     return (
         <div className="LuciadMap">
             <div className="LuciadMapElement" ref={divRef} style={{backgroundColor: bgColor.value}}></div>
-            <div style={{ position: "fixed", top: 16, left: 16, zIndex: 1000 }}>
-                <ColorPicker colors={AvailableBackgroundColors} currentColor={bgColor} onChange={handleColorChange} />
-            </div>
+            {/*<div style={{ position: "fixed", top: 16, left: 16, zIndex: 1000 }}>*/}
+            {/*    <ColorPicker colors={AvailableBackgroundColors} currentColor={bgColor} onChange={handleColorChange} />*/}
+            {/*</div>*/}
             <ViewToolIBar mapRef={mapRef} layerRef={activeLayer}/>
         </div>
     )
@@ -225,7 +225,9 @@ function restrictBounds3D(map: WebGLMap | null, layer: TileSet3DLayer) {
         targetBounds = createBounds(targetBounds.reference, [
             targetBounds.x - (targetScale - 1) * targetBounds.width / 2, targetBounds.width * targetScale,
             targetBounds.y - (targetScale - 1) * targetBounds.height / 2, targetBounds.height * targetScale,
-            targetBounds.z - ((targetScale*2) - 1) * targetBounds.depth / 2, targetBounds.depth * targetScale *2
+            // targetBounds.z - ((targetScale*2) - 1) * targetBounds.depth / 2, targetBounds.depth * targetScale *2
+            targetBounds.z + targetBounds.depth / 3 - (targetBounds.depth * targetScale * 2) / 2,
+            targetBounds.depth * targetScale * 2
         ]);
     }
 

@@ -1,8 +1,6 @@
 import './App.scss';
 import * as React from "react";
 import {LuciadMap} from "./components/luciadmap/LuciadMap.tsx";
-import {FullscreenButton} from "./components/fullscreen/FullscreenButton.tsx";
-import {Attribution} from "./components/attribution/Attribution.tsx";
 import {useRef, useState} from "react";
 import {ThemeProvider, createTheme} from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -35,14 +33,14 @@ const App: React.FC = () => {
         }
     };
 
-    const handleFullscreen = () => {
-        const elem = document.documentElement;
-        if (!document.fullscreenElement) {
-            elem.requestFullscreen().catch(err => console.error(err));
-        } else {
-            document.exitFullscreen();
-        }
-    };
+    // const handleFullscreen = () => {
+    //     const elem = document.documentElement;
+    //     if (!document.fullscreenElement) {
+    //         elem.requestFullscreen().catch(err => console.error(err));
+    //     } else {
+    //         document.exitFullscreen();
+    //     }
+    // };
 
     return (
         <ThemeProvider theme={theme}>
@@ -60,8 +58,8 @@ const App: React.FC = () => {
                 {/* Main app content that fades in */}
                 <div className="AppContent" ref={contentRef} style={{opacity: 0}}>
                     <LuciadMap onShowTime={onShowTime}/>
-                    <FullscreenButton onClick={handleFullscreen}/>
-                    <Attribution text="Green Cubes" url="https://www.google.com"/>
+                    {/*<FullscreenButton onClick={handleFullscreen}/>*/}
+                    {/*<Attribution text="Green Cubes" url="https://www.google.com"/>*/}
                 </div>
                 {(!loading && error) && (
                     <div className="Errorverlay">

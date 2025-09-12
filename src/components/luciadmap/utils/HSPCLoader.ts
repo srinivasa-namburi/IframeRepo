@@ -4,6 +4,20 @@ import type {PointCloudStyle} from "@luciad/ria/view/style/PointCloudStyle.js";
 import {ScalingMode} from "@luciad/ria/view/style/ScalingMode.js";
 import {OGC3DTilesModel} from "@luciad/ria/model/tileset/OGC3DTilesModel.js";
 import type {HttpRequestHeaders} from "@luciad/ria/util/HttpRequestOptions.js";
+import {attribute, color, fraction, mixmap, numberParameter} from "@luciad/ria/util/expression/ExpressionFactory.js";
+
+const COLOR_SPAN_INTENSITY = [
+    "#808080", // medium gray
+    "#999999", // lighter
+    "#B3B3B3", // even lighter
+    "#CCCCCC", // very light
+    "#E6E6E6"  // near white
+];
+
+const colorMix = COLOR_SPAN_INTENSITY.map(c => {
+    return color(c);
+});
+
 
 interface LoadingOptions {
     requestHeaders?: HttpRequestHeaders;
@@ -80,17 +94,32 @@ function mapRequestInitToLoadingOptions(r: RequestInit | null | undefined): Load
 }
 
 //  Defines a style to style a PointCloud
-function createPointStyle(): {
+function createPointStyle(mode?: "rgb" | "intensity"): {
     pointCloudStyle: PointCloudStyle;
 }  {
-    return {
-        pointCloudStyle: {
-            //  gapFill: 3,   // Too heavy style for Intel Integrated Graphic cards
-            pointSize: {
-                mode: ScalingMode.ADAPTIVE_WORLD_SIZE,
-                minimumPixelSize: 2,
-                worldScale: 1
-            },
-        },
+    // Range (8 bits)
+    const minParameter = numberParameter(0);
+    const maxParameter = numberParameter(16384);
+    const intensityFraction = fraction(attribute("Intensity"), minParameter!, maxParameter!);
+
+    const common: PointCloudStyle = {
+        pointSize:{
+            mode: ScalingMode.ADAPTIVE_WORLD_SIZE,
+            minimumPixelSize: 2,
+            worldScale: 1
+        }
     }
+    if (mode==="intensity") {
+        return {
+            pointCloudStyle: {
+                ...common,
+                colorExpression: mixmap(intensityFraction, colorMix)
+            }
+        }
+    } else {
+        return {
+            pointCloudStyle: {...common}
+        }
+    }
+
 }
