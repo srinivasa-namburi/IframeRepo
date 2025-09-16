@@ -22,7 +22,7 @@ import ROTATION_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_circles.
 import PAN_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_arrows.glb";
 import SCROLL_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_octhedron.glb";
 import {NavigationKeysMode} from "ria-toolbox/libs/scene-navigation/KeyNavigationSupport";
-import {SceneNavigationControllerV2} from "./controllers/scenenavigation/SceneNavigationControllerV2.ts";
+import {SceneNavigationController} from "ria-toolbox/libs/scene-navigation/SceneNavigationController";
 import {NavigationGizmo} from "ria-toolbox/libs/scene-navigation/NavigationGizmo";
 import {NavigationType} from "ria-toolbox/libs/scene-navigation/GestureUtil";
 import {DefaultController} from "@luciad/ria/view/controller/DefaultController.js";
@@ -241,14 +241,14 @@ function restrictBounds3D(map: WebGLMap | null, layer: TileSet3DLayer) {
         [NavigationType.ZOOM]: new NavigationGizmo(SCROLL_GLB, { sizeInPixels: 40 })
     };
     // Create a controller with varying options.
-    const navigateController = new SceneNavigationControllerV2(gizmos, limitBounds, {
+    const navigateController = new SceneNavigationController(gizmos, limitBounds, {
         navigationMode: NavigationKeysMode.TANGENT_FORWARD, // navigate along camera paths
         defaultSpeed: 8, // ~28km/h
         allowZoomOnClick: true, // clicking on a spot zooms in on to that location by a set fraction
         useZoomAnimations: false, // don't use smooth animations when zooming or out
         fasterMultiplier: 2, // go two times as fast when shift is pressed
         slowerMultiplier: 0.5, // go only half as fast when space is pressed
-        invertButtons: true
+        swapPanRotateButtons: true
     });
 
     map.defaultController = new DefaultController({ navigateController });
