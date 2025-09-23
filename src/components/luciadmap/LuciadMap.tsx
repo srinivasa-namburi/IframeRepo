@@ -1,7 +1,7 @@
 import * as React from "react";
+import {useEffect, useRef, useState} from "react";
 
 import "./LuciadMap.scss"
-import {useEffect, useRef} from "react";
 import {WebGLMap} from "@luciad/ria/view/WebGLMap.js";
 import {getReference} from "@luciad/ria/reference/ReferenceProvider.js";
 import {FeatureLayer} from "@luciad/ria/view/feature/FeatureLayer.js";
@@ -10,14 +10,18 @@ import {FeatureModel} from "@luciad/ria/model/feature/FeatureModel.js";
 import {createBounds, createPolyline} from "@luciad/ria/shape/ShapeFactory.js";
 import {Feature} from "@luciad/ria/model/feature/Feature.js";
 import {AxisPainter} from "./utils/AxisPainter.ts";
-import {getRequestInitValues, loadHSPC, loadOGC3dTiles} from "./utils/HSPCLoader.ts";
+import {
+    getRequestInitValues,
+    INITIAL_POINTCLOUD_STYLE_MODE,
+    loadHSPC,
+    loadOGC3dTiles, setPointStyleMode,
+    type StyleModeName
+} from "./utils/HSPCLoader.ts";
 import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
 import {loadLabels} from "./utils/LabelLoader.ts";
 import {ViewToolIBar} from "../buttons/ViewToolIBar.tsx";
 import {type BackgroundColor, ColorPickerFindColor} from "../colorpicker/ColorPicker.tsx";
-import {
-    createEquirectangularImagery,
-} from "@luciad/ria/view/EnvironmentMapEffect.js";
+import {createEquirectangularImagery,} from "@luciad/ria/view/EnvironmentMapEffect.js";
 import ROTATION_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_circles.glb";
 import PAN_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_arrows.glb";
 import SCROLL_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_octhedron.glb";
@@ -26,6 +30,9 @@ import {SceneNavigationController} from "ria-toolbox/libs/scene-navigation/Scene
 import {NavigationGizmo} from "ria-toolbox/libs/scene-navigation/NavigationGizmo";
 import {NavigationType} from "ria-toolbox/libs/scene-navigation/GestureUtil";
 import {DefaultController} from "@luciad/ria/view/controller/DefaultController.js";
+import {ShapeType} from "@luciad/ria/shape/ShapeType.js";
+import type {Point} from "@luciad/ria/shape/Point.js";
+import {PointStyleSelectMode} from "../select/PointStyleSelectMode.tsx";
 
 const defaultProjection = "LUCIAD:XYZ";
 
@@ -62,14 +69,32 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     const storedColor = "$sky";
     const [bgColor, /*setBgColor*/] = React.useState<BackgroundColor>(ColorPickerFindColor(AvailableBackgroundColors, storedColor));
 
+    const [styleMode, setStyleMode] =  useState(INITIAL_POINTCLOUD_STYLE_MODE as StyleModeName);
+
     const divRef = useRef<HTMLDivElement | null>(null);
     const mapRef = useRef<WebGLMap | null>(null);
     const activeLayer = useRef<TileSet3DLayer | null>(null);
+
+    const onClickZoom = (feature: Feature)=> {
+        if (feature && feature.shape && feature.shape.bounds && mapRef.current) {
+            if (feature.shape.type === ShapeType.POINT) {
+                const delta = 1.2;
+                const point = feature.shape as Point;
+                const bounds = createBounds(feature.shape.reference, [
+                    point.x - delta /2 , delta,
+                    point.y - delta /2, delta,
+                    point.z - delta /2 , delta])
+                mapRef.current.mapNavigator.fit({bounds, animate: true});
+            }
+        }
+        return false;
+    }
 
     useEffect(() => {
         if (divRef.current) {
             mapRef.current = new WebGLMap(divRef.current, {reference});
             createAxes();
+            createEffects(mapRef.current);
             createSky(mapRef.current, bgColor.id);
 
             if (hspcUrl) {
@@ -82,6 +107,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                         activeLayer.current = layer;
                         if (labelsUrl) loadLabels(labelsUrl, requestInit).then(labelsLayer => {
                             mapRef.current?.layerTree.addChild(labelsLayer);
+                            labelsLayer.onClick = onClickZoom;
                         }).catch(()=>{
                             if (typeof props.onShowTime === "function") props.onShowTime(false);
                         })
@@ -107,6 +133,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                         mapRef.current?.mapNavigator.fit({bounds: layer.bounds, animate: false});
                         activeLayer.current = layer;
                         if (labelsUrl) loadLabels(labelsUrl, requestInit).then(labelsLayer => {
+                            labelsLayer.onClick = onClickZoom;
                             mapRef.current?.layerTree.addChild(labelsLayer);
                         })
                         restrictBounds3D(mapRef.current, layer);
@@ -138,6 +165,13 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     //     localStorage.setItem(LOCAL_STORAGE_BG_KEY, color.id);
     // };
 
+    const createEffects = (map: WebGLMap | null) => {
+        if (!map) return;
+        map.effects.eyeDomeLighting = {
+            window: 1,
+            strength: 0.1
+        }
+    }
 
     const createSky = (map: WebGLMap | null, colorId: string) => {
         if (!map) return;
@@ -185,12 +219,20 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
         targetModel.add(featurePlane);
     }
 
+    const setStyleModeAction = (mode: StyleModeName)=> {
+        if (activeLayer.current) {
+            setStyleMode(mode);
+            setPointStyleMode(activeLayer.current, mode);
+        }
+    }
+
     return (
         <div className="LuciadMap">
             <div className="LuciadMapElement" ref={divRef} style={{backgroundColor: bgColor.value}}></div>
-            {/*<div style={{ position: "fixed", top: 16, left: 16, zIndex: 1000 }}>*/}
-            {/*    <ColorPicker colors={AvailableBackgroundColors} currentColor={bgColor} onChange={handleColorChange} />*/}
-            {/*</div>*/}
+            <div style={{ position: "fixed", top: 16, left: 16, zIndex: 1000 }}>
+                {/*<ColorPicker colors={AvailableBackgroundColors} currentColor={bgColor} onChange={handleColorChange} />*/}
+                <PointStyleSelectMode onChange={(mode)=>setStyleModeAction(mode)} mode={styleMode}/>
+            </div>
             <ViewToolIBar mapRef={mapRef} layerRef={activeLayer}/>
         </div>
     )
