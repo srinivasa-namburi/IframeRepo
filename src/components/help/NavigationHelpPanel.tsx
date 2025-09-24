@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// NavigationHelpPanel.tsx
+import React, { useState, useEffect } from "react";
 import {
     Drawer,
     IconButton,
@@ -38,7 +39,15 @@ const KeyCap: React.FC<{ label: string; wide?: boolean }> = ({ label, wide }) =>
 
 export const NavigationHelpPanel: React.FC = () => {
     const [open, setOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
     const toggleDrawer = (state: boolean) => () => setOpen(state);
+
+    useEffect(() => {
+        const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+        const touchDevice = /android|iphone|ipad|iPod|windows phone/i.test(userAgent);
+        setIsMobile(touchDevice);
+    }, []);
 
     const movementControls = [
         { keys: ["↑", "W"], text: "Move Forward" },
@@ -61,6 +70,15 @@ export const NavigationHelpPanel: React.FC = () => {
         { label: "Click Label", text: "Zoom To Inspect" },
     ];
 
+    const touchControls = [
+        { label: "Swipe One Finger", text: "Pan View" },
+        { label: "Pinch Two Fingers", text: "Zoom In / Out" },
+        { label: "Swipe Two Fingers", text: "Rotate View" },
+        { label: "Tap Label", text: "Zoom To Inspect" },
+    ];
+
+    const controlsToRender = isMobile ? touchControls : mouseControls;
+
     return (
         <>
             {/* Floating Help Button */}
@@ -72,17 +90,16 @@ export const NavigationHelpPanel: React.FC = () => {
                 <HelpOutlineIcon />
             </IconButton>
 
-            <Drawer anchor="right" open={open} onClose={toggleDrawer(false)}>
+            <Drawer anchor="right" open={open} onClose={toggleDrawer(false)}
+                    ModalProps={{
+                        BackdropProps: {
+                            sx: { backgroundColor: "rgba(0,0,0,0.1)" } // adjust opacity here
+                        }
+                    }}
+            >
                 <Box sx={{ width: 320, p: 1 }}>
-                    {/* Header with title and close button */}
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            mb: 1.5,
-                        }}
-                    >
+                    {/* Header */}
+                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.5 }}>
                         <Typography variant="subtitle1" fontWeight="bold">
                             3D Navigation Help
                         </Typography>
@@ -96,25 +113,13 @@ export const NavigationHelpPanel: React.FC = () => {
                         Keyboard Controls
                     </Typography>
 
-                    <Box
-                        sx={{
-                            display: "grid",
-                            gap: 1,
-                            gridTemplateColumns: { xs: "repeat(1, 1fr)", sm: "repeat(2, 1fr)" },
-                        }}
-                    >
+                    <Box sx={{ display: "grid", gap: 1, gridTemplateColumns: "repeat(2, 1fr)" }}>
                         <Box>
                             <List dense>
                                 {movementControls.map((item, idx) => (
                                     <ListItem key={idx} sx={{ py: 0.3 }}>
                                         <ListItemText
-                                            primary={
-                                                <span>
-                          {item.keys.map((k, i) => (
-                              <KeyCap key={i} label={k} />
-                          ))}
-                        </span>
-                                            }
+                                            primary={<span>{item.keys.map((k, i) => (<KeyCap key={i} label={k} />))}</span>}
                                             secondary={item.text}
                                             secondaryTypographyProps={{ fontSize: "0.75rem" }}
                                         />
@@ -128,13 +133,7 @@ export const NavigationHelpPanel: React.FC = () => {
                                 {verticalSpeedControls.map((item, idx) => (
                                     <ListItem key={idx} sx={{ py: 0.3 }}>
                                         <ListItemText
-                                            primary={
-                                                <span>
-                          {item.keys.map((k, i) => (
-                              <KeyCap key={i} label={k} wide={k === "Shift" || k === "Space"} />
-                          ))}
-                        </span>
-                                            }
+                                            primary={<span>{item.keys.map((k, i) => (<KeyCap key={i} label={k} wide={k === "Shift" || k === "Space"} />))}</span>}
                                             secondary={item.text}
                                             secondaryTypographyProps={{ fontSize: "0.75rem" }}
                                         />
@@ -146,23 +145,17 @@ export const NavigationHelpPanel: React.FC = () => {
 
                     <Divider sx={{ mt: 1 }} />
 
-                    {/* Mouse Controls */}
+                    {/* Mouse / Touch Controls */}
                     <Box sx={{ mt: 2 }}>
                         <Typography variant="body2" sx={{ mb: 1 }} fontWeight="bold">
-                            Mouse Controls
+                            {isMobile ? "Touch Controls" : "Mouse Controls"}
                         </Typography>
 
-                        <Box
-                            sx={{
-                                display: "grid",
-                                gap: 1,
-                                gridTemplateColumns: { xs: "repeat(1, 1fr)", sm: "repeat(2, 1fr)" },
-                            }}
-                        >
+                        <Box sx={{ display: "grid", gap: 1, gridTemplateColumns: "repeat(2, 1fr)" }}>
                             {(() => {
-                                const mid = Math.ceil(mouseControls.length / 2);
-                                const left = mouseControls.slice(0, mid);
-                                const right = mouseControls.slice(mid);
+                                const mid = Math.ceil(controlsToRender.length / 2);
+                                const left = controlsToRender.slice(0, mid);
+                                const right = controlsToRender.slice(mid);
 
                                 return (
                                     <>
