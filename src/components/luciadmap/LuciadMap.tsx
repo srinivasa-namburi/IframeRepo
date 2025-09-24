@@ -33,6 +33,7 @@ import {DefaultController} from "@luciad/ria/view/controller/DefaultController.j
 import {ShapeType} from "@luciad/ria/shape/ShapeType.js";
 import type {Point} from "@luciad/ria/shape/Point.js";
 import {PointStyleSelectMode} from "../select/PointStyleSelectMode.tsx";
+import {NavigationHelpPanel} from "../help/NavigationHelpPanel.tsx";
 
 const defaultProjection = "LUCIAD:XYZ";
 
@@ -232,6 +233,8 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
             <div style={{ position: "fixed", top: 16, left: 16, zIndex: 1000 }}>
                 {/*<ColorPicker colors={AvailableBackgroundColors} currentColor={bgColor} onChange={handleColorChange} />*/}
                 <PointStyleSelectMode onChange={(mode)=>setStyleModeAction(mode)} mode={styleMode}/>
+                <NavigationHelpPanel />
+
             </div>
             <ViewToolIBar mapRef={mapRef} layerRef={activeLayer}/>
         </div>
@@ -285,11 +288,11 @@ function restrictBounds3D(map: WebGLMap | null, layer: TileSet3DLayer) {
     // Create a controller with varying options.
     const navigateController = new SceneNavigationController(gizmos, limitBounds, {
         navigationMode: NavigationKeysMode.TANGENT_FORWARD, // navigate along camera paths
-        defaultSpeed: 8, // ~28km/h
+        defaultSpeed: 1, // ~28km/h
         allowZoomOnClick: true, // clicking on a spot zooms in on to that location by a set fraction
         useZoomAnimations: false, // don't use smooth animations when zooming or out
-        fasterMultiplier: 2, // go two times as fast when shift is pressed
-        slowerMultiplier: 0.5, // go only half as fast when space is pressed
+        fasterMultiplier: 4, // go two times as fast when shift is pressed
+        slowerMultiplier: 0.25, // go only half as fast when space is pressed
         swapPanRotateButtons: true
     });
 
