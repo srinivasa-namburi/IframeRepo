@@ -29,29 +29,6 @@ const InvisibleIconStyle:  IconStyle = {
     height: "32px"
 }
 
-// const LabelColor = "#00ffff";
-const LabelColor = "#e5dcea";
-const labelCssStyleRobot =`"
-      display: inline-block;
-      font-family: 'Courier New', Courier, monospace;
-      font-weight: bold;
-      font-size: 14px;
-      color: ${LabelColor}; /* neon cyan */
-      text-shadow: 
-        0 0 2px ${LabelColor},
-        0 0 5px ${LabelColor},
-        0 0 10px ${LabelColor},
-        0 0 15px ${LabelColor};
-      background-color: rgba(0,0,0,0.3);
-      padding: 2px 6px;
-      border: 1px solid ${LabelColor};
-      border-radius: 4px;
-      box-shadow: 0 0 6px ${LabelColor};
-      text-align: center;
-      pointer-events: none;
-      white-space: nowrap;
-    "`
-
 const Scale = 0.8;
 
 const IconStyle = (diameter: number): Icon3DStyle => ({
@@ -73,8 +50,8 @@ export class PointCloudLabelPainter extends FeaturePainter {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     paintLabel(labelCanvas: LabelCanvas, feature: Feature, shape: Shape, _layer: Layer, _map: Map, _paintState: PaintState) {
-        const html = `<div style=${labelCssStyleRobot}>${feature.properties.diameter.toFixed(2)}</div>`;
-
+        const className = _paintState.hovered ? "label-robot hovered" : "label-robot";
+        const html = `<div class="${className}">${feature.properties.diameter.toFixed(2)}</div>`;
 
         if (shape instanceof Point) {
             labelCanvas.drawLabel(html, shape, {

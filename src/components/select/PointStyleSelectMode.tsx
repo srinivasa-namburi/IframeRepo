@@ -31,8 +31,8 @@ export const PointStyleSelectMode: React.FC<PointStyleSelectModeProps> = ({ onCh
             }}
         >
             <MenuItem value="rgb">RGB</MenuItem>
-            <MenuItem value="intensity">Intensity</MenuItem>
             <MenuItem value="vertical">Height</MenuItem>
+            <MenuItem value="intensity">Intensity</MenuItem>
         </Select>
     );
 };
