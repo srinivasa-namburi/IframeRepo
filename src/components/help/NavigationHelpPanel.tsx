@@ -49,6 +49,7 @@ export const NavigationHelpPanel: React.FC = () => {
         setIsMobile(touchDevice);
     }, []);
 
+    // Desktop controls
     const movementControls = [
         { keys: ["↑", "W"], text: "Move Forward" },
         { keys: ["↓", "S"], text: "Move Backward" },
@@ -77,6 +78,15 @@ export const NavigationHelpPanel: React.FC = () => {
         { label: "Tap Label", text: "Zoom To Inspect" },
     ];
 
+    // Mobile-specific instructions
+    const joystickControls = [
+        { label: "Joystick", text: "Drag to move horizontally / vertically" },
+    ];
+
+    const verticalButtons = [
+        { label: "↑ / ↓ Buttons", text: "Move Up / Down" },
+    ];
+
     const controlsToRender = isMobile ? touchControls : mouseControls;
 
     return (
@@ -90,12 +100,13 @@ export const NavigationHelpPanel: React.FC = () => {
                 <HelpOutlineIcon />
             </IconButton>
 
-            <Drawer anchor="right" open={open} onClose={toggleDrawer(false)}
-                    ModalProps={{
-                        BackdropProps: {
-                            sx: { backgroundColor: "rgba(0,0,0,0.1)" } // adjust opacity here
-                        }
-                    }}
+            <Drawer
+                anchor="right"
+                open={open}
+                onClose={toggleDrawer(false)}
+                ModalProps={{
+                    BackdropProps: { sx: { backgroundColor: "rgba(0,0,0,0.1)" } }
+                }}
             >
                 <Box sx={{ width: 320, p: 1 }}>
                     {/* Header */}
@@ -108,40 +119,72 @@ export const NavigationHelpPanel: React.FC = () => {
                         </IconButton>
                     </Box>
 
-                    {/* Keyboard Controls */}
-                    <Typography variant="body2" sx={{ mb: 1 }} fontWeight="bold">
-                        Keyboard Controls
-                    </Typography>
+                    {isMobile ? (
+                        <>
+                            <Typography variant="body2" sx={{ mb: 1 }} fontWeight="bold">
+                                Joystick Controls
+                            </Typography>
 
-                    <Box sx={{ display: "grid", gap: 1, gridTemplateColumns: "repeat(2, 1fr)" }}>
-                        <Box>
-                            <List dense>
-                                {movementControls.map((item, idx) => (
-                                    <ListItem key={idx} sx={{ py: 0.3 }}>
-                                        <ListItemText
-                                            primary={<span>{item.keys.map((k, i) => (<KeyCap key={i} label={k} />))}</span>}
-                                            secondary={item.text}
-                                            secondaryTypographyProps={{ fontSize: "0.75rem" }}
-                                        />
-                                    </ListItem>
-                                ))}
-                            </List>
-                        </Box>
-
-                        <Box>
-                            <List dense>
-                                {verticalSpeedControls.map((item, idx) => (
-                                    <ListItem key={idx} sx={{ py: 0.3 }}>
-                                        <ListItemText
-                                            primary={<span>{item.keys.map((k, i) => (<KeyCap key={i} label={k} wide={k === "Shift" || k === "Space"} />))}</span>}
-                                            secondary={item.text}
-                                            secondaryTypographyProps={{ fontSize: "0.75rem" }}
-                                        />
-                                    </ListItem>
-                                ))}
-                            </List>
-                        </Box>
-                    </Box>
+                            <Box sx={{ display: "grid", gap: 1 }}>
+                                <List dense>
+                                    {joystickControls.map((item, idx) => (
+                                        <ListItem key={idx} sx={{ py: 0.3 }}>
+                                            <ListItemText
+                                                primary={item.label}
+                                                secondary={item.text}
+                                                primaryTypographyProps={{ fontWeight: "bold", fontSize: "0.75rem" }}
+                                                secondaryTypographyProps={{ fontSize: "0.7rem" }}
+                                            />
+                                        </ListItem>
+                                    ))}
+                                    {verticalButtons.map((item, idx) => (
+                                        <ListItem key={idx} sx={{ py: 0.3 }}>
+                                            <ListItemText
+                                                primary={item.label}
+                                                secondary={item.text}
+                                                primaryTypographyProps={{ fontWeight: "bold", fontSize: "0.75rem" }}
+                                                secondaryTypographyProps={{ fontSize: "0.7rem" }}
+                                            />
+                                        </ListItem>
+                                    ))}
+                                </List>
+                            </Box>
+                        </>
+                    ) : (
+                        <>
+                            <Typography variant="body2" sx={{ mb: 1 }} fontWeight="bold">
+                                Keyboard Controls
+                            </Typography>
+                            <Box sx={{ display: "grid", gap: 1, gridTemplateColumns: "repeat(2, 1fr)" }}>
+                                <Box>
+                                    <List dense>
+                                        {movementControls.map((item, idx) => (
+                                            <ListItem key={idx} sx={{ py: 0.3 }}>
+                                                <ListItemText
+                                                    primary={<span>{item.keys.map((k, i) => (<KeyCap key={i} label={k} />))}</span>}
+                                                    secondary={item.text}
+                                                    secondaryTypographyProps={{ fontSize: "0.75rem" }}
+                                                />
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                </Box>
+                                <Box>
+                                    <List dense>
+                                        {verticalSpeedControls.map((item, idx) => (
+                                            <ListItem key={idx} sx={{ py: 0.3 }}>
+                                                <ListItemText
+                                                    primary={<span>{item.keys.map((k, i) => (<KeyCap key={i} label={k} wide={k === "Shift" || k === "Space"} />))}</span>}
+                                                    secondary={item.text}
+                                                    secondaryTypographyProps={{ fontSize: "0.75rem" }}
+                                                />
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                </Box>
+                            </Box>
+                        </>
+                    )}
 
                     <Divider sx={{ mt: 1 }} />
 
