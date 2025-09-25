@@ -8,6 +8,7 @@ import {
 import { Bounds } from "@luciad/ria/shape/Bounds.js";
 import { BoundedCameraSupport } from "ria-toolbox/libs/scene-navigation/camera/BoundedCameraSupport";
 import type {WebGLMap} from "@luciad/ria/view/WebGLMap.js";
+import {ReferenceType} from "@luciad/ria/reference/ReferenceType.js";
 
 export class JoystickPanSupport extends BoundedCameraSupport {
     private _map: Map | null = null;
@@ -68,8 +69,18 @@ export class JoystickPanSupport extends BoundedCameraSupport {
 
     private panVertical(amount: number) {
         if (!this._map) return;
-        const { camera } = this._map;
-        const newEye = add(camera.eye, scale(camera.up, amount));
+        const camera = this._map.camera;
+
+        // Determine the vertical direction according to camera reference
+        let verticalVec;
+        if (camera.worldReference.referenceType === ReferenceType.GEOCENTRIC) {
+            verticalVec = normalize(camera.eye);
+        } else {
+            verticalVec = { x: 0, y: 0, z: 1 };
+        }
+
+        // Apply the signed amount
+        const newEye = add(camera.eye, scale(verticalVec, amount));
         this.modifyCameraEye(this._map, newEye, true);
     }
 
