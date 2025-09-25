@@ -241,11 +241,20 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
             </div>
             <ViewToolIBar mapRef={mapRef} layerRef={activeLayer}/>
             <MobileJoystickControls
-                onMove={(dx, dy) => {
+                onLeftJoystickMove={(dx, dy) => {
                     if (joystickSupport.current) {
                         // dx: left/right, dy: forward/back
                         joystickSupport.current.moveHorizontally(dx);  // your existing moveLeft/moveRight
                         joystickSupport.current.moveVertically(dy);    // your existing moveForward/moveBackward
+                    }
+                }}
+                onRightJoystickMove={(dx, dy) => {
+                    if (joystickSupport.current) {
+                        // dx: left/right, dy: forward/back
+                        console.log(dx);
+                        console.log(dy);
+                     //   joystickSupport.current.moveHorizontally(dx);  // your existing moveLeft/moveRight
+                     //   joystickSupport.current.moveVertically(dy);    // your existing moveForward/moveBackward
                     }
                 }}
                 onUp={(active) => joystickSupport.current?.setMoveUp(active)}
