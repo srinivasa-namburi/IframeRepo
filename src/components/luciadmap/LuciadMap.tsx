@@ -26,7 +26,6 @@ import ROTATION_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_circles.
 import PAN_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_arrows.glb";
 import SCROLL_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_octhedron.glb";
 import {NavigationKeysMode} from "ria-toolbox/libs/scene-navigation/KeyNavigationSupport";
-import {SceneNavigationController} from "ria-toolbox/libs/scene-navigation/SceneNavigationController";
 import {NavigationGizmo} from "ria-toolbox/libs/scene-navigation/NavigationGizmo";
 import {NavigationType} from "ria-toolbox/libs/scene-navigation/GestureUtil";
 import {DefaultController} from "@luciad/ria/view/controller/DefaultController.js";
@@ -34,6 +33,9 @@ import {ShapeType} from "@luciad/ria/shape/ShapeType.js";
 import type {Point} from "@luciad/ria/shape/Point.js";
 import {PointStyleSelectMode} from "../select/PointStyleSelectMode.tsx";
 import {NavigationHelpPanel} from "../help/NavigationHelpPanel.tsx";
+import {MobileJoystickControls} from "../joystick/MobileJoystickControls.tsx";
+import {SceneNavigationControllerJoystick} from "../joystick/SceneNavigationControllerJoystick.ts";
+import type {JoystickPanSupport} from "../joystick/JoystickPanSupport.ts";
 
 const defaultProjection = "LUCIAD:XYZ";
 
@@ -69,6 +71,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     // const storedColor = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
     const storedColor = "$sky";
     const [bgColor, /*setBgColor*/] = React.useState<BackgroundColor>(ColorPickerFindColor(AvailableBackgroundColors, storedColor));
+    const joystickSupport = useRef(null as JoystickPanSupport | null | undefined);
 
     const [styleMode, setStyleMode] =  useState(INITIAL_POINTCLOUD_STYLE_MODE as StyleModeName);
 
@@ -112,7 +115,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                         }).catch(()=>{
                             if (typeof props.onShowTime === "function") props.onShowTime(false);
                         })
-                        restrictBounds3D(mapRef.current, layer);
+                        joystickSupport.current = restrictBounds3D(mapRef.current, layer);
                         if (typeof props.onShowTime === "function") props.onShowTime(true);
                     }  // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     catch (_e) {
@@ -137,7 +140,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                             labelsLayer.onClick = onClickZoom;
                             mapRef.current?.layerTree.addChild(labelsLayer);
                         })
-                        restrictBounds3D(mapRef.current, layer);
+                        joystickSupport.current = restrictBounds3D(mapRef.current, layer);
                         if (typeof props.onShowTime === "function") props.onShowTime(true);
                     } // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     catch (_e) {
@@ -237,6 +240,17 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
 
             </div>
             <ViewToolIBar mapRef={mapRef} layerRef={activeLayer}/>
+            <MobileJoystickControls
+                onMove={(dx, dy) => {
+                    if (joystickSupport.current) {
+                        // dx: left/right, dy: forward/back
+                        joystickSupport.current.moveHorizontally(dx);  // your existing moveLeft/moveRight
+                        joystickSupport.current.moveVertically(dy);    // your existing moveForward/moveBackward
+                    }
+                }}
+                onUp={(active) => joystickSupport.current?.setMoveUp(active)}
+                onDown={(active) => joystickSupport.current?.setMoveDown(active)}
+            />
         </div>
     )
 }
@@ -286,7 +300,7 @@ function restrictBounds3D(map: WebGLMap | null, layer: TileSet3DLayer) {
         [NavigationType.ZOOM]: new NavigationGizmo(SCROLL_GLB, { sizeInPixels: 40 })
     };
     // Create a controller with varying options.
-    const navigateController = new SceneNavigationController(gizmos, limitBounds, {
+    const navigateController = new SceneNavigationControllerJoystick(gizmos, limitBounds, {
         navigationMode: NavigationKeysMode.TANGENT_FORWARD, // navigate along camera paths
         defaultSpeed: 1, // ~28km/h
         allowZoomOnClick: true, // clicking on a spot zooms in on to that location by a set fraction
@@ -298,5 +312,6 @@ function restrictBounds3D(map: WebGLMap | null, layer: TileSet3DLayer) {
 
     map.defaultController = new DefaultController({ navigateController });
 
+    return navigateController.getJoystickPanSupport();
 }
 
