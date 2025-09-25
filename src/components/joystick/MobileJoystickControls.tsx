@@ -9,6 +9,10 @@ interface MobileJoystickControlsProps {
     onRightJoystickMove: (dx: number, dy: number) => void; // right joystick
 }
 
+const ZIndexButtons =  999;
+const ZIndexJoysticks =  999;
+
+
 export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                                                                                   onLeftJoystickMove,
                                                                                   onUp,
@@ -228,7 +232,7 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                     alignItems: "center",
                     justifyContent: "center",
                     touchAction: "none", // required to allow pointermove without browser gestures
-                    zIndex: 3000,
+                    zIndex: ZIndexJoysticks,
                     userSelect: "none",
                 }}
                 style={{ WebkitUserSelect: "none" }}
@@ -270,7 +274,7 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                     alignItems: "center",
                     justifyContent: "center",
                     touchAction: "none",
-                    zIndex: 3000,
+                    zIndex: ZIndexJoysticks,
                     userSelect: "none",
                 }}
                 style={{ WebkitUserSelect: "none" }}
@@ -301,8 +305,8 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                     transform: "translateX(-50%)",
                     display: "flex",
                     flexDirection: "column",
-                    gap: 5,
-                    zIndex: 3000,
+                    gap: 4,
+                    zIndex: ZIndexButtons,
                 }}
             >
                 <Box
