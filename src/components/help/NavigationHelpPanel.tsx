@@ -80,7 +80,8 @@ export const NavigationHelpPanel: React.FC = () => {
 
     // Mobile-specific instructions
     const joystickControls = [
-        { label: "Joystick", text: "Drag to move horizontally / vertically" },
+        { label: "Left Joystick", text: "Move Camera (Left / Right / Forward / Backward)" },
+        { label: "Right Joystick", text: "Rotate Camera (look around / head movement)" },
     ];
 
     const verticalButtons = [
