@@ -9,6 +9,9 @@ import { Bounds } from "@luciad/ria/shape/Bounds.js";
 import { BoundedCameraSupport } from "ria-toolbox/libs/scene-navigation/camera/BoundedCameraSupport";
 import type {WebGLMap} from "@luciad/ria/view/WebGLMap.js";
 import {ReferenceType} from "@luciad/ria/reference/ReferenceType.js";
+import {clamp} from "ria-toolbox/libs/core/util/Math";
+
+const JOYSTICK_ROTATION_SCALING = 2.5;
 
 export class JoystickPanSupport extends BoundedCameraSupport {
     private _map: Map | null = null;
@@ -90,5 +93,23 @@ export class JoystickPanSupport extends BoundedCameraSupport {
             this._intervalId = null;
         }
         this._map = null;
+    }
+
+    public rotateYaw(dx: number) {
+        if (!this._map) return;
+        const lookFromCamera = this._map.camera.asLookFrom();
+        lookFromCamera.yaw = (lookFromCamera.yaw + dx * JOYSTICK_ROTATION_SCALING ) % 360;
+        this.modifyCameraLookFrom(this._map, lookFromCamera);
+    }
+
+    public rotatePitch(dy: number) {
+        if (!this._map) return;
+        const lookFromCamera = this._map.camera.asLookFrom();
+        lookFromCamera.pitch = clamp(
+            lookFromCamera.pitch + dy * JOYSTICK_ROTATION_SCALING ,
+            -89,
+            89
+        );
+        this.modifyCameraLookFrom(this._map, lookFromCamera);
     }
 }

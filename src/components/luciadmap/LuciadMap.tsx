@@ -251,10 +251,8 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                 onRightJoystickMove={(dx, dy) => {
                     if (joystickSupport.current) {
                         // dx: left/right, dy: forward/back
-                        console.log(dx);
-                        console.log(dy);
-                     //   joystickSupport.current.moveHorizontally(dx);  // your existing moveLeft/moveRight
-                     //   joystickSupport.current.moveVertically(dy);    // your existing moveForward/moveBackward
+                        joystickSupport.current.rotateYaw(dx);  // your existing moveLeft/moveRight
+                        joystickSupport.current.rotatePitch(dy);    // your existing moveForward/moveBackward
                     }
                 }}
                 onUp={(active) => joystickSupport.current?.setMoveUp(active)}
