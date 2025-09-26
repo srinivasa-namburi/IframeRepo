@@ -40,6 +40,10 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
 
     const animationRef = useRef<number | null>(null);
 
+    // ===== Up/Down active states =====
+    const [isUpActive, setIsUpActive] = useState(false);
+    const [isDownActive, setIsDownActive] = useState(false);
+
     // detect mobile-ish devices
     useEffect(() => {
         const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
@@ -184,21 +188,25 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
         finishPointer(rightPointerIdRef, setDraggingRight, setRightPos, rightDxRef, rightDyRef, rightJoystickRef);
     };
 
-    // Up/Down handlers
+    // Up/Down handlers with highlight
     const handleUpPointerDown = (e: React.PointerEvent) => {
         e.preventDefault();
+        setIsUpActive(true);
         onUp(true);
     };
     const handleUpPointerUp = (e: React.PointerEvent) => {
         e.preventDefault();
+        setIsUpActive(false);
         onUp(false);
     };
     const handleDownPointerDown = (e: React.PointerEvent) => {
         e.preventDefault();
+        setIsDownActive(true);
         onDown(true);
     };
     const handleDownPointerUp = (e: React.PointerEvent) => {
         e.preventDefault();
+        setIsDownActive(false);
         onDown(false);
     };
 
@@ -236,7 +244,7 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                         height: 50,
                         borderRadius: "50%",
                         backgroundColor: "rgba(200,200,200,0.8)",
-                        transform: `translate(${leftPos.x}px, ${leftPos.y}px)`,
+                        transform: `translate(${leftPos.x}px, ${leftPos.y}px) scale(${draggingLeft ? 1.2 : 1})`,
                         transition: draggingLeft ? "none" : "transform 0.2s ease",
                         userSelect: "none",
                         touchAction: "none",
@@ -276,7 +284,7 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                         height: 50,
                         borderRadius: "50%",
                         backgroundColor: "rgba(200,200,200,0.8)",
-                        transform: `translate(${rightPos.x}px, ${rightPos.y}px)`,
+                        transform: `translate(${rightPos.x}px, ${rightPos.y}px) scale(${draggingRight ? 1.2 : 1})`,
                         transition: draggingRight ? "none" : "transform 0.2s ease",
                         userSelect: "none",
                         touchAction: "none",
@@ -306,7 +314,7 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                         width: 60,
                         height: 60,
                         borderRadius: "50%",
-                        backgroundColor: "rgba(0,0,0,0.3)",
+                        backgroundColor: isUpActive ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.3)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -328,7 +336,7 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                         width: 60,
                         height: 60,
                         borderRadius: "50%",
-                        backgroundColor: "rgba(0,0,0,0.3)",
+                        backgroundColor: isDownActive ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.3)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
