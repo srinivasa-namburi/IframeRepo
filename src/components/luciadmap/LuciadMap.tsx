@@ -183,7 +183,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
         if (colorId === "$sky") {
             map.effects.environmentMap = {
                 skybox: {
-                   imagery: createEquirectangularImagery("./background/skybox_default.9bbc03ab.jpg")
+                   imagery: createEquirectangularImagery("./background/skybox_blue.jpg")
                 },
             };
         } else {
