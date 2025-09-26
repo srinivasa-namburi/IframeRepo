@@ -14,15 +14,15 @@ const ZIndexJoysticks = 999;
 const maxRadius = 50;
 const deadZone = 0.1; // Dead zone: ignore small movements near center
 
+const JoystickBottom = 30;
+const JoystickSide = 30;
+
 export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                                                                                   onLeftJoystickMove,
                                                                                   onUp,
                                                                                   onDown,
                                                                                   onRightJoystickMove,
                                                                               }) => {
-    const [isMobile, setIsMobile] = useState(false);
-
-    // ===== Left joystick state =====
     const [draggingLeft, setDraggingLeft] = useState(false);
     const [leftPos, setLeftPos] = useState({ x: 0, y: 0 });
     const leftJoystickRef = useRef<HTMLDivElement | null>(null);
@@ -30,7 +30,6 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
     const leftDxRef = useRef(0);
     const leftDyRef = useRef(0);
 
-    // ===== Right joystick state =====
     const [draggingRight, setDraggingRight] = useState(false);
     const [rightPos, setRightPos] = useState({ x: 0, y: 0 });
     const rightJoystickRef = useRef<HTMLDivElement | null>(null);
@@ -38,51 +37,30 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
     const rightDxRef = useRef(0);
     const rightDyRef = useRef(0);
 
-    const animationRef = useRef<number | null>(null);
-
-    // ===== Up/Down active states =====
     const [isUpActive, setIsUpActive] = useState(false);
     const [isDownActive, setIsDownActive] = useState(false);
 
-    // detect mobile-ish devices
-    useEffect(() => {
-        const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
-        const mobile = /android|iphone|ipad|iPod|windows phone/i.test(ua);
-        setIsMobile(mobile);
-    }, []);
+    const animationRef = useRef<number | null>(null);
 
     // continuous reporting loop using requestAnimationFrame
     useEffect(() => {
-        if (!isMobile) return;
-
         const loop = () => {
-            // left joystick dead zone
             const leftDx = Math.abs(leftDxRef.current) < deadZone ? 0 : leftDxRef.current;
             const leftDy = Math.abs(leftDyRef.current) < deadZone ? 0 : leftDyRef.current;
-            if (leftDx !== 0 || leftDy !== 0) {
-                onLeftJoystickMove(leftDx, leftDy);
-            }
+            if (leftDx !== 0 || leftDy !== 0) onLeftJoystickMove(leftDx, leftDy);
 
-            // right joystick dead zone
             const rightDx = Math.abs(rightDxRef.current) < deadZone ? 0 : rightDxRef.current;
             const rightDy = Math.abs(rightDyRef.current) < deadZone ? 0 : rightDyRef.current;
-            if (rightDx !== 0 || rightDy !== 0) {
-                onRightJoystickMove(rightDx, rightDy);
-            }
+            if (rightDx !== 0 || rightDy !== 0) onRightJoystickMove(rightDx, rightDy);
 
             animationRef.current = requestAnimationFrame(loop);
         };
 
         animationRef.current = requestAnimationFrame(loop);
-
         return () => {
-            if (animationRef.current !== null) {
-                cancelAnimationFrame(animationRef.current);
-            }
+            if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
         };
-    }, [isMobile, onLeftJoystickMove, onRightJoystickMove]);
-
-    if (!isMobile) return null;
+    }, [onLeftJoystickMove, onRightJoystickMove]);
 
     // helper to compute normalized joystick values from pointer position
     const computeJoystickFromPointer = (
@@ -108,7 +86,6 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
         dyRef.current = -y / maxRadius; // invert Y so up is positive
     };
 
-    // unified finish pointer function
     const finishPointer = (
         pointerIdRef: React.MutableRefObject<number | null>,
         setDragging: React.Dispatch<React.SetStateAction<boolean>>,
@@ -118,11 +95,7 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
         elRef: React.RefObject<HTMLDivElement | null>
     ) => {
         const el = elRef.current;
-        if (el && pointerIdRef.current !== null) {
-            try {
-                el.releasePointerCapture?.(pointerIdRef.current);
-            } catch {}
-        }
+        if (el && pointerIdRef.current !== null) el.releasePointerCapture?.(pointerIdRef.current);
         pointerIdRef.current = null;
         setDragging(false);
         setPos({ x: 0, y: 0 });
@@ -130,9 +103,8 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
         dyRef.current = 0;
     };
 
-    // ---------- LEFT joystick pointer handlers ----------
+    // LEFT joystick handlers
     const onLeftPointerDown = (e: React.PointerEvent) => {
-        if (e.button && e.pointerType === "mouse") return;
         e.preventDefault();
         const el = leftJoystickRef.current;
         if (!el) return;
@@ -153,15 +125,10 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
         e.preventDefault();
         finishPointer(leftPointerIdRef, setDraggingLeft, setLeftPos, leftDxRef, leftDyRef, leftJoystickRef);
     };
-    const onLeftPointerCancel = (e: React.PointerEvent) => {
-        if (leftPointerIdRef.current !== e.pointerId) return;
-        e.preventDefault();
-        finishPointer(leftPointerIdRef, setDraggingLeft, setLeftPos, leftDxRef, leftDyRef, leftJoystickRef);
-    };
+    const onLeftPointerCancel = onLeftPointerUp;
 
-    // ---------- RIGHT joystick pointer handlers ----------
+    // RIGHT joystick handlers
     const onRightPointerDown = (e: React.PointerEvent) => {
-        if (e.button && e.pointerType === "mouse") return;
         e.preventDefault();
         const el = rightJoystickRef.current;
         if (!el) return;
@@ -182,13 +149,9 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
         e.preventDefault();
         finishPointer(rightPointerIdRef, setDraggingRight, setRightPos, rightDxRef, rightDyRef, rightJoystickRef);
     };
-    const onRightPointerCancel = (e: React.PointerEvent) => {
-        if (rightPointerIdRef.current !== e.pointerId) return;
-        e.preventDefault();
-        finishPointer(rightPointerIdRef, setDraggingRight, setRightPos, rightDxRef, rightDyRef, rightJoystickRef);
-    };
+    const onRightPointerCancel = onRightPointerUp;
 
-    // Up/Down handlers with highlight
+    // Up/Down button handlers
     const handleUpPointerDown = (e: React.PointerEvent) => {
         e.preventDefault();
         setIsUpActive(true);
@@ -222,8 +185,8 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                 onPointerCancel={onLeftPointerCancel}
                 sx={{
                     position: "fixed",
-                    bottom: 60,
-                    left: 20,
+                    bottom: JoystickBottom,
+                    left: JoystickSide,
                     width: 120,
                     height: 120,
                     borderRadius: "50%",
@@ -237,8 +200,6 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                 }}
             >
                 <Box
-                    onPointerDown={(e) => e.preventDefault()}
-                    onPointerMove={(e) => e.preventDefault()}
                     sx={{
                         width: 50,
                         height: 50,
@@ -252,83 +213,19 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                 />
             </Box>
 
-            {/* Right Joystick */}
-            <Box
-                ref={rightJoystickRef}
-                onContextMenu={(e) => e.preventDefault()}
-                onPointerDown={onRightPointerDown}
-                onPointerMove={onRightPointerMove}
-                onPointerUp={onRightPointerUp}
-                onPointerCancel={onRightPointerCancel}
-                sx={{
-                    position: "fixed",
-                    bottom: 60,
-                    right: 20,
-                    width: 120,
-                    height: 120,
-                    borderRadius: "50%",
-                    backgroundColor: "rgba(0,0,0,0.3)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    touchAction: "none",
-                    zIndex: ZIndexJoysticks,
-                    userSelect: "none",
-                }}
-            >
-                <Box
-                    onPointerDown={(e) => e.preventDefault()}
-                    onPointerMove={(e) => e.preventDefault()}
-                    sx={{
-                        width: 50,
-                        height: 50,
-                        borderRadius: "50%",
-                        backgroundColor: "rgba(200,200,200,0.8)",
-                        transform: `translate(${rightPos.x}px, ${rightPos.y}px) scale(${draggingRight ? 1.2 : 1})`,
-                        transition: draggingRight ? "none" : "transform 0.2s ease",
-                        userSelect: "none",
-                        touchAction: "none",
-                    }}
-                />
-            </Box>
-
-            {/* Up/Down Buttons (centered) */}
+            {/* Up/Down Buttons above Left Joystick */}
             <Box
                 sx={{
                     position: "fixed",
-                    bottom: 40,
-                    left: "50%",
+                    bottom: JoystickBottom + 120 + 4, // joystick bottom + joystick height + gap
+                    left: JoystickSide + 60, // joystick left + half joystick width (horizontal center)
                     transform: "translateX(-50%)",
                     display: "flex",
-                    flexDirection: "column",
                     gap: 4,
                     zIndex: ZIndexButtons,
                 }}
             >
                 <Box
-                    onContextMenu={(e) => e.preventDefault()}
-                    onPointerDown={handleUpPointerDown}
-                    onPointerUp={handleUpPointerUp}
-                    onPointerCancel={handleUpPointerUp}
-                    sx={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: "50%",
-                        backgroundColor: isUpActive ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.3)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: "bold",
-                        fontSize: 24,
-                        color: "white",
-                        userSelect: "none",
-                        touchAction: "none",
-                    }}
-                >
-                    ↑
-                </Box>
-                <Box
-                    onContextMenu={(e) => e.preventDefault()}
                     onPointerDown={handleDownPointerDown}
                     onPointerUp={handleDownPointerUp}
                     onPointerCancel={handleDownPointerUp}
@@ -349,6 +246,65 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                 >
                     ↓
                 </Box>
+                <Box
+                    onPointerDown={handleUpPointerDown}
+                    onPointerUp={handleUpPointerUp}
+                    onPointerCancel={handleUpPointerUp}
+                    sx={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: "50%",
+                        backgroundColor: isUpActive ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: "bold",
+                        fontSize: 24,
+                        color: "white",
+                        userSelect: "none",
+                        touchAction: "none",
+                    }}
+                >
+                    ↑
+                </Box>
+            </Box>
+
+            {/* Right Joystick */}
+            <Box
+                ref={rightJoystickRef}
+                onContextMenu={(e) => e.preventDefault()}
+                onPointerDown={onRightPointerDown}
+                onPointerMove={onRightPointerMove}
+                onPointerUp={onRightPointerUp}
+                onPointerCancel={onRightPointerCancel}
+                sx={{
+                    position: "fixed",
+                    bottom: JoystickBottom,
+                    right: JoystickSide,
+                    width: 120,
+                    height: 120,
+                    borderRadius: "50%",
+                    backgroundColor: "rgba(0,0,0,0.3)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    touchAction: "none",
+                    zIndex: ZIndexJoysticks,
+                    userSelect: "none",
+                }}
+            >
+                <Box
+                    sx={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: "50%",
+                        backgroundColor: "rgba(200,200,200,0.8)",
+                        transform: `translate(${rightPos.x}px, ${rightPos.y}px) scale(${draggingRight ? 1.2 : 1})`,
+                        transition: draggingRight ? "none" : "transform 0.2s ease",
+                        userSelect: "none",
+                        touchAction: "none",
+                    }}
+                />
             </Box>
         </>
     );
