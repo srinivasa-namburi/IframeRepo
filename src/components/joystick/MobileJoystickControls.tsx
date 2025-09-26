@@ -17,6 +17,7 @@ const deadZone = 0.1; // Dead zone: ignore small movements near center
 const JoystickBottom = 30;
 const JoystickSide = 30;
 const JoystickWidthHeight = 120;
+const JoystickButtonGap = 4;
 
 export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                                                                                   onLeftJoystickMove,
@@ -218,7 +219,7 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
             <Box
                 sx={{
                     position: "fixed",
-                    bottom: JoystickBottom + JoystickWidthHeight + 4, // joystick bottom + joystick height + gap
+                    bottom: JoystickBottom + JoystickWidthHeight + JoystickButtonGap, // joystick bottom + joystick height + gap
                     left: JoystickSide + 60, // joystick left + half joystick width (horizontal center)
                     transform: "translateX(-50%)",
                     display: "flex",
