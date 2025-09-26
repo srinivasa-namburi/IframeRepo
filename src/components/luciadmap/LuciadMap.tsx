@@ -97,6 +97,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     useEffect(() => {
         if (divRef.current) {
             mapRef.current = new WebGLMap(divRef.current, {reference});
+            onInit(mapRef.current);
             createAxes();
             createEffects(mapRef.current);
             createSky(mapRef.current, bgColor.id);
@@ -177,6 +178,14 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
         }
     }
 
+    const onInit = (map: WebGLMap | null) => {
+        if (!map) return;
+        map.onClick = ()=> {
+            map.domNode.focus();
+            return false;
+        }
+    }
+
     const createSky = (map: WebGLMap | null, colorId: string) => {
         if (!map) return;
 
@@ -232,7 +241,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
 
     return (
         <div className="LuciadMap">
-            <div className="LuciadMapElement" ref={divRef} style={{backgroundColor: bgColor.value}}></div>
+            <div className="LuciadMapElement" ref={divRef} style={{backgroundColor: bgColor.value}} tabIndex={0} />
             <div style={{ position: "fixed", top: 16, left: 16, zIndex: 1000 }}>
                 {/*<ColorPicker colors={AvailableBackgroundColors} currentColor={bgColor} onChange={handleColorChange} />*/}
                 <PointStyleSelectMode onChange={(mode)=>setStyleModeAction(mode)} mode={styleMode}/>

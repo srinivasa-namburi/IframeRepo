@@ -1,21 +1,25 @@
 import {HSPCTilesModel} from "@luciad/ria/model/tileset/HSPCTilesModel.js";
-import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
+import {TileLoadingStrategy, TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
 import type {PointCloudStyle} from "@luciad/ria/view/style/PointCloudStyle.js";
 import {ScalingMode} from "@luciad/ria/view/style/ScalingMode.js";
 import {OGC3DTilesModel} from "@luciad/ria/model/tileset/OGC3DTilesModel.js";
 import type {HttpRequestHeaders} from "@luciad/ria/util/HttpRequestOptions.js";
 import {
     attribute,
-    color, dotProduct,
+    color,
+    dotProduct,
     fraction,
     mixmap,
     numberParameter,
+    pointParameter,
     positionAttribute
 } from "@luciad/ria/util/expression/ExpressionFactory.js";
-import {pointParameter} from "@luciad/ria/util/expression/ExpressionFactory.js";
 
 export type StyleModeName =  "rgb" | "intensity" | "vertical";
 export const INITIAL_POINTCLOUD_STYLE_MODE = "rgb";
+
+const QUALITY_FACTOR = 0.6;
+const MAX_FOR_MOBILE = 5_000_000;
 
 const COLOR_SPAN_HEIGHT = [
     "rgba( 0 , 0 , 255, 0.9)",
@@ -64,6 +68,9 @@ export function loadHSPC(url: string, o: RequestInit | null) {
                 //Create a layer for the model
                 const layer = new TileSet3DLayer(model, {
                     label: "HSPC Layer",
+                    qualityFactor: QUALITY_FACTOR,
+                    loadingStrategy: TileLoadingStrategy.OVERVIEW_FIRST,
+                    performanceHints: {maxPointCount: MAX_FOR_MOBILE}
                 });
                 const style = createPointStyle({mode: INITIAL_POINTCLOUD_STYLE_MODE, layer});
                 // Set the style
@@ -83,6 +90,9 @@ export function loadOGC3dTiles(url: string, o: RequestInit | null) {
             //Create a layer for the model
             const layer = new TileSet3DLayer(model, {
                 label: "OGC 3D Tiles Layer",
+                qualityFactor: QUALITY_FACTOR,
+                loadingStrategy: TileLoadingStrategy.OVERVIEW_FIRST,
+                performanceHints: {maxPointCount: MAX_FOR_MOBILE}
             });
             const style = createPointStyle({mode: INITIAL_POINTCLOUD_STYLE_MODE, layer});
             // Set the style
