@@ -9,9 +9,10 @@ interface MobileJoystickControlsProps {
     onRightJoystickMove: (dx: number, dy: number) => void; // right joystick
 }
 
-const ZIndexButtons =  999;
-const ZIndexJoysticks =  999;
-
+const ZIndexButtons = 999;
+const ZIndexJoysticks = 999;
+const maxRadius = 50;
+const deadZone = 0.1; // Dead zone: ignore small movements near center
 
 export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                                                                                   onLeftJoystickMove,
@@ -37,39 +38,49 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
     const rightDxRef = useRef(0);
     const rightDyRef = useRef(0);
 
-    const intervalRef = useRef<number | null>(null);
-    const maxRadius = 50;
+    const animationRef = useRef<number | null>(null);
 
-    // detect mobile-ish devices (keep as you had it)
+    // detect mobile-ish devices
     useEffect(() => {
         const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
         const mobile = /android|iphone|ipad|iPod|windows phone/i.test(ua);
         setIsMobile(mobile);
     }, []);
 
-    // continuous reporting loop
+    // continuous reporting loop using requestAnimationFrame
     useEffect(() => {
         if (!isMobile) return;
-        intervalRef.current = window.setInterval(() => {
-            if (leftDxRef.current !== 0 || leftDyRef.current !== 0) {
-                onLeftJoystickMove(leftDxRef.current, leftDyRef.current);
+
+        const loop = () => {
+            // left joystick dead zone
+            const leftDx = Math.abs(leftDxRef.current) < deadZone ? 0 : leftDxRef.current;
+            const leftDy = Math.abs(leftDyRef.current) < deadZone ? 0 : leftDyRef.current;
+            if (leftDx !== 0 || leftDy !== 0) {
+                onLeftJoystickMove(leftDx, leftDy);
             }
-            if (rightDxRef.current !== 0 || rightDyRef.current !== 0) {
-                onRightJoystickMove(rightDxRef.current, rightDyRef.current);
+
+            // right joystick dead zone
+            const rightDx = Math.abs(rightDxRef.current) < deadZone ? 0 : rightDxRef.current;
+            const rightDy = Math.abs(rightDyRef.current) < deadZone ? 0 : rightDyRef.current;
+            if (rightDx !== 0 || rightDy !== 0) {
+                onRightJoystickMove(rightDx, rightDy);
             }
-        }, 50);
+
+            animationRef.current = requestAnimationFrame(loop);
+        };
+
+        animationRef.current = requestAnimationFrame(loop);
 
         return () => {
-            if (intervalRef.current !== null) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
+            if (animationRef.current !== null) {
+                cancelAnimationFrame(animationRef.current);
             }
         };
     }, [isMobile, onLeftJoystickMove, onRightJoystickMove]);
 
     if (!isMobile) return null;
 
-    // helper to compute normalized joystick values from a pointer position
+    // helper to compute normalized joystick values from pointer position
     const computeJoystickFromPointer = (
         clientX: number,
         clientY: number,
@@ -93,55 +104,55 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
         dyRef.current = -y / maxRadius; // invert Y so up is positive
     };
 
+    // unified finish pointer function
+    const finishPointer = (
+        pointerIdRef: React.MutableRefObject<number | null>,
+        setDragging: React.Dispatch<React.SetStateAction<boolean>>,
+        setPos: React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
+        dxRef: React.MutableRefObject<number>,
+        dyRef: React.MutableRefObject<number>,
+        elRef: React.RefObject<HTMLDivElement | null>
+    ) => {
+        const el = elRef.current;
+        if (el && pointerIdRef.current !== null) {
+            try {
+                el.releasePointerCapture?.(pointerIdRef.current);
+            } catch {}
+        }
+        pointerIdRef.current = null;
+        setDragging(false);
+        setPos({ x: 0, y: 0 });
+        dxRef.current = 0;
+        dyRef.current = 0;
+    };
+
     // ---------- LEFT joystick pointer handlers ----------
     const onLeftPointerDown = (e: React.PointerEvent) => {
-        // only accept primary pointer (finger / primary mouse button)
         if (e.button && e.pointerType === "mouse") return;
         e.preventDefault();
         const el = leftJoystickRef.current;
         if (!el) return;
         leftPointerIdRef.current = e.pointerId;
-        (el as HTMLElement).setPointerCapture?.(e.pointerId);
+        el.setPointerCapture?.(e.pointerId);
         setDraggingLeft(true);
-        // initialize position immediately
         computeJoystickFromPointer(e.clientX, e.clientY, el, setLeftPos, leftDxRef, leftDyRef);
     };
-
     const onLeftPointerMove = (e: React.PointerEvent) => {
         e.preventDefault();
+        if (leftPointerIdRef.current !== e.pointerId) return;
         const el = leftJoystickRef.current;
         if (!el) return;
-        if (leftPointerIdRef.current !== e.pointerId) return; // ignore other pointers
         computeJoystickFromPointer(e.clientX, e.clientY, el, setLeftPos, leftDxRef, leftDyRef);
     };
-
-    const finishLeftPointer = (_e?: React.PointerEvent) => {
-        // optional event used to release capture
-        const el = leftJoystickRef.current;
-        if (el && leftPointerIdRef.current !== null) {
-            try {
-                (el as HTMLElement).releasePointerCapture?.(leftPointerIdRef.current);
-            } catch {
-                /* ignore release errors */
-            }
-        }
-        leftPointerIdRef.current = null;
-        setDraggingLeft(false);
-        setLeftPos({ x: 0, y: 0 });
-        leftDxRef.current = 0;
-        leftDyRef.current = 0;
-    };
-
     const onLeftPointerUp = (e: React.PointerEvent) => {
         if (leftPointerIdRef.current !== e.pointerId) return;
         e.preventDefault();
-        finishLeftPointer(e);
+        finishPointer(leftPointerIdRef, setDraggingLeft, setLeftPos, leftDxRef, leftDyRef, leftJoystickRef);
     };
-
     const onLeftPointerCancel = (e: React.PointerEvent) => {
         if (leftPointerIdRef.current !== e.pointerId) return;
         e.preventDefault();
-        finishLeftPointer(e);
+        finishPointer(leftPointerIdRef, setDraggingLeft, setLeftPos, leftDxRef, leftDyRef, leftJoystickRef);
     };
 
     // ---------- RIGHT joystick pointer handlers ----------
@@ -151,48 +162,29 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
         const el = rightJoystickRef.current;
         if (!el) return;
         rightPointerIdRef.current = e.pointerId;
-        (el as HTMLElement).setPointerCapture?.(e.pointerId);
+        el.setPointerCapture?.(e.pointerId);
         setDraggingRight(true);
         computeJoystickFromPointer(e.clientX, e.clientY, el, setRightPos, rightDxRef, rightDyRef);
     };
-
     const onRightPointerMove = (e: React.PointerEvent) => {
         e.preventDefault();
+        if (rightPointerIdRef.current !== e.pointerId) return;
         const el = rightJoystickRef.current;
         if (!el) return;
-        if (rightPointerIdRef.current !== e.pointerId) return;
         computeJoystickFromPointer(e.clientX, e.clientY, el, setRightPos, rightDxRef, rightDyRef);
     };
-
-    const finishRightPointer = (_e?: React.PointerEvent) => {
-        const el = rightJoystickRef.current;
-        if (el && rightPointerIdRef.current !== null) {
-            try {
-                (el as HTMLElement).releasePointerCapture?.(rightPointerIdRef.current);
-            } catch {
-                /* ignore release errors */
-            }
-        }
-        rightPointerIdRef.current = null;
-        setDraggingRight(false);
-        setRightPos({ x: 0, y: 0 });
-        rightDxRef.current = 0;
-        rightDyRef.current = 0;
-    };
-
     const onRightPointerUp = (e: React.PointerEvent) => {
         if (rightPointerIdRef.current !== e.pointerId) return;
         e.preventDefault();
-        finishRightPointer(e);
+        finishPointer(rightPointerIdRef, setDraggingRight, setRightPos, rightDxRef, rightDyRef, rightJoystickRef);
     };
-
     const onRightPointerCancel = (e: React.PointerEvent) => {
         if (rightPointerIdRef.current !== e.pointerId) return;
         e.preventDefault();
-        finishRightPointer(e);
+        finishPointer(rightPointerIdRef, setDraggingRight, setRightPos, rightDxRef, rightDyRef, rightJoystickRef);
     };
 
-    // Up/Down handlers (preserve your previous behavior)
+    // Up/Down handlers
     const handleUpPointerDown = (e: React.PointerEvent) => {
         e.preventDefault();
         onUp(true);
@@ -231,11 +223,10 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    touchAction: "none", // required to allow pointermove without browser gestures
+                    touchAction: "none",
                     zIndex: ZIndexJoysticks,
                     userSelect: "none",
                 }}
-                style={{ WebkitUserSelect: "none" }}
             >
                 <Box
                     onPointerDown={(e) => e.preventDefault()}
@@ -250,7 +241,6 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                         userSelect: "none",
                         touchAction: "none",
                     }}
-                    style={{ WebkitUserSelect: "none" }}
                 />
             </Box>
 
@@ -277,7 +267,6 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                     zIndex: ZIndexJoysticks,
                     userSelect: "none",
                 }}
-                style={{ WebkitUserSelect: "none" }}
             >
                 <Box
                     onPointerDown={(e) => e.preventDefault()}
@@ -292,7 +281,6 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                         userSelect: "none",
                         touchAction: "none",
                     }}
-                    style={{ WebkitUserSelect: "none" }}
                 />
             </Box>
 
@@ -328,7 +316,6 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                         userSelect: "none",
                         touchAction: "none",
                     }}
-                    style={{ WebkitUserSelect: "none" }}
                 >
                     ↑
                 </Box>
@@ -351,7 +338,6 @@ export const MobileJoystickControls: React.FC<MobileJoystickControlsProps> = ({
                         userSelect: "none",
                         touchAction: "none",
                     }}
-                    style={{ WebkitUserSelect: "none" }}
                 >
                     ↓
                 </Box>
