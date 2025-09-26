@@ -4,12 +4,8 @@ import {useEffect, useRef, useState} from "react";
 import "./LuciadMap.scss"
 import {WebGLMap} from "@luciad/ria/view/WebGLMap.js";
 import {getReference} from "@luciad/ria/reference/ReferenceProvider.js";
-import {FeatureLayer} from "@luciad/ria/view/feature/FeatureLayer.js";
-import {MemoryStore} from "@luciad/ria/model/store/MemoryStore.js";
-import {FeatureModel} from "@luciad/ria/model/feature/FeatureModel.js";
-import {createBounds, createPolyline} from "@luciad/ria/shape/ShapeFactory.js";
+import {createBounds} from "@luciad/ria/shape/ShapeFactory.js";
 import {Feature} from "@luciad/ria/model/feature/Feature.js";
-import {AxisPainter} from "./utils/AxisPainter.ts";
 import {
     getRequestInitValues,
     INITIAL_POINTCLOUD_STYLE_MODE,
@@ -21,7 +17,6 @@ import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
 import {loadLabels} from "./utils/LabelLoader.ts";
 import {ViewToolIBar} from "../buttons/ViewToolIBar.tsx";
 import {type BackgroundColor, ColorPickerFindColor} from "../colorpicker/ColorPicker.tsx";
-import {createEquirectangularImagery,} from "@luciad/ria/view/EnvironmentMapEffect.js";
 import ROTATION_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_circles.glb";
 import PAN_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_arrows.glb";
 import SCROLL_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_octhedron.glb";
@@ -36,6 +31,9 @@ import {NavigationHelpPanel} from "../help/NavigationHelpPanel.tsx";
 import {MobileJoystickControls} from "../joystick/MobileJoystickControls.tsx";
 import {SceneNavigationControllerJoystick} from "../joystick/SceneNavigationControllerJoystick.ts";
 import type {JoystickPanSupport} from "../joystick/JoystickPanSupport.ts";
+import {createAxes, createSky} from "./utils/createSettings.ts";
+import {createEffects} from "./utils/createSettings.ts";
+import {CameraNearPlaneManager} from "./CameraNearPlaneManager.ts";
 
 const defaultProjection = "LUCIAD:XYZ";
 
@@ -97,9 +95,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     useEffect(() => {
         if (divRef.current) {
             mapRef.current = new WebGLMap(divRef.current, {reference});
-            onInit(mapRef.current);
-            createAxes();
-            createEffects(mapRef.current);
+            initMap(mapRef.current);
             createSky(mapRef.current, bgColor.id);
 
             if (hspcUrl) {
@@ -170,67 +166,22 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     //     localStorage.setItem(LOCAL_STORAGE_BG_KEY, color.id);
     // };
 
-    const createEffects = (map: WebGLMap | null) => {
-        if (!map) return;
-        map.effects.eyeDomeLighting = {
-            window: 1,
-            strength: 0.1
-        }
-    }
 
-    const onInit = (map: WebGLMap | null) => {
+    const initMap = (map: WebGLMap | null) => {
         if (!map) return;
+        createEffects(map);
+        createAxes(map);
+
+        const manager = new CameraNearPlaneManager();
+        manager.setCameraNearPlane(map);
+
         map.onClick = ()=> {
             map.domNode.focus();
             return false;
         }
     }
 
-    const createSky = (map: WebGLMap | null, colorId: string) => {
-        if (!map) return;
 
-        if (colorId === "$sky") {
-            map.effects.environmentMap = {
-                skybox: {
-                   imagery: createEquirectangularImagery("./background/skybox_blue.jpg")
-                },
-            };
-        } else {
-            map.effects.environmentMap = {
-                skybox: null
-            };
-        }
-    }
-
-    const createAxes = () => {
-        if (!mapRef.current) return;
-        let layer = mapRef.current.layerTree.findLayerById("axis") as FeatureLayer;
-        if (layer) return;
-
-        const store = new MemoryStore({reference});
-        const model = new FeatureModel(store, {reference});
-        const painter = new AxisPainter();
-        layer = new FeatureLayer(model, {id: "axis", visible: false, editable: false, selectable: false, painter});
-        mapRef.current.layerTree.addChild(layer);
-
-        const targetModel = layer.model;
-
-        const axes = [
-            {axis: "x", from: [-100, 0, 0], to: [100, 0, 0], id: "x"},
-            {axis: "y", from: [0, -100, 0], to: [0, 100, 0], id: "y"},
-            {axis: "z", from: [0, 0, -100], to: [0, 0, 100], id: "z"}
-        ];
-
-        for (const {axis, from, to, id} of axes) {
-            const line = createPolyline(reference, [from as never, to as never]);
-            const feature = new Feature(line, {axis}, id);
-            targetModel.add(feature);
-        }
-
-        const plane = createBounds(reference, [-100, 200, -100, 200, 0, 0]);
-        const featurePlane = new Feature(plane, {axis: "x"}, "plane-x");
-        targetModel.add(featurePlane);
-    }
 
     const setStyleModeAction = (mode: StyleModeName)=> {
         if (activeLayer.current) {
