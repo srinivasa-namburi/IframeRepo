@@ -11,7 +11,7 @@ import type {WebGLMap} from "@luciad/ria/view/WebGLMap.js";
 import {ReferenceType} from "@luciad/ria/reference/ReferenceType.js";
 import {clamp} from "ria-toolbox/libs/core/util/Math";
 
-const JOYSTICK_ROTATION_SCALING = 3;
+const JOYSTICK_ROTATION_SCALING = 1;
 
 export class JoystickPanSupport extends BoundedCameraSupport {
     private _map: Map | null = null;
@@ -19,7 +19,7 @@ export class JoystickPanSupport extends BoundedCameraSupport {
     private _moveDownActive = false;
     private _intervalId: number | null = null;
 
-    private _sensitivity = 0.1;
+    private _sensitivity = 0.05;
     private _upDownStep = 0.05;
     private _tickMs = 50;
 
