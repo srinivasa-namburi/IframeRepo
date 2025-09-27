@@ -34,8 +34,8 @@ import type {JoystickPanSupport} from "../joystick/JoystickPanSupport.ts";
 import {createAxes, createSky} from "./utils/createSettings.ts";
 import {createEffects} from "./utils/createSettings.ts";
 import {CameraNearPlaneManager} from "./utils/CameraNearPlaneManager.ts";
-import {HorizonIndicator} from "../horizontalIndicator/HorizonIndicator.tsx";
 import {type CameraAngles, CameraChangeDetectionManager} from "./utils/CameraChangeDetectionManager.ts";
+import {CubeAxesIndicator} from "../cubeaxis/CubeAxesIndicator.tsx";
 
 const defaultProjection = "LUCIAD:XYZ";
 
@@ -230,13 +230,14 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
             <div
                 style={{
                     position: "fixed",
-                    bottom: 25,
+                    bottom: 40,
                     left: "50%",
                     transform: "translateX(-50%)", // centers horizontally
                     userSelect: "none", // optional: prevent text selection
+                    pointerEvents: "none"
                 }}
             >
-                <HorizonIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} yaw={cameraAngles.yaw} opacity={0.8} size={100}/>
+                <CubeAxesIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} yaw={cameraAngles.yaw} opacity={1} size={70}/>
             </div>
         </div>
     )

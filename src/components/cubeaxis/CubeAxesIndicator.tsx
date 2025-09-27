@@ -7,7 +7,6 @@ interface CubeAxesIndicatorProps {
     yaw: number;
     size?: number;
     opacity?: number;
-    axisScale?: number; // scale factor for axis length
 }
 
 export const CubeAxesIndicator: React.FC<CubeAxesIndicatorProps> = ({
@@ -16,8 +15,8 @@ export const CubeAxesIndicator: React.FC<CubeAxesIndicatorProps> = ({
                                                                         yaw,
                                                                         size = 200,
                                                                         opacity = 1,
-                                                                        axisScale = 1.2, // default axis scale
                                                                     }) => {
+    const axisScale = 1.1; // default axis scale
     const half = size / 2;
     const SOrigin = 1.1; // origin shift factor
 
