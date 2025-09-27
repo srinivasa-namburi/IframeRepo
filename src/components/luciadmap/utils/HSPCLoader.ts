@@ -10,7 +10,7 @@ import {
     dotProduct,
     fraction,
     mixmap,
-    numberParameter,
+    numberParameter, type ParameterExpression,
     pointParameter,
     positionAttribute
 } from "@luciad/ria/util/expression/ExpressionFactory.js";
@@ -20,6 +20,12 @@ export const INITIAL_POINTCLOUD_STYLE_MODE = "rgb";
 
 const QUALITY_FACTOR = 0.6;
 const MAX_FOR_MOBILE = 5_000_000;
+
+export interface PointCloudStyleParameters {
+    min: ParameterExpression<number>;
+    max: ParameterExpression<number>;
+    gradient: string[];
+};
 
 const COLOR_SPAN_HEIGHT = [
     "rgba( 0 , 0 , 255, 0.9)",
@@ -94,9 +100,8 @@ export function loadOGC3dTiles(url: string, o: RequestInit | null) {
                 loadingStrategy: TileLoadingStrategy.OVERVIEW_FIRST,
                 performanceHints: {maxPointCount: MAX_FOR_MOBILE}
             });
-            const style = createPointStyle({mode: INITIAL_POINTCLOUD_STYLE_MODE, layer});
             // Set the style
-            layer.pointCloudStyle = style.pointCloudStyle;
+            setPointStyleMode(layer, INITIAL_POINTCLOUD_STYLE_MODE);
             resolve(layer)
         }).catch(()=>{
             reject();
@@ -109,6 +114,11 @@ export function setPointStyleMode(layer: TileSet3DLayer, mode: StyleModeName) {
     // Set the style
     layer.pointCloudStyle["colorExpression"] = undefined;
     layer.pointCloudStyle = style.pointCloudStyle;
+    (layer as any).pointCloudStyleParameters = style.parameters;
+}
+
+export function getPointCloudStyleParameters(layer: TileSet3DLayer) {
+    return (layer as any).pointCloudStyleParameters as  PointCloudStyleParameters;
 }
 
 function mapRequestInitToLoadingOptions(r: RequestInit | null | undefined): LoadingOptions {
@@ -134,6 +144,7 @@ function mapRequestInitToLoadingOptions(r: RequestInit | null | undefined): Load
 
 //  Defines a style to style a PointCloud
 function createPointStyle(options: {mode: StyleModeName, layer: TileSet3DLayer}): {
+    parameters?: PointCloudStyleParameters;
     pointCloudStyle: PointCloudStyle;
 }  {
     const {layer, mode} = options;
@@ -160,6 +171,11 @@ function createPointStyle(options: {mode: StyleModeName, layer: TileSet3DLayer})
     }
     if (mode==="vertical") {
         return {
+            parameters: {
+                min: minHeightParameter,
+                max: maxHeightParameter,
+                gradient: COLOR_SPAN_HEIGHT
+            },
             pointCloudStyle: {
                 ...common,
                 colorExpression: mixmap(heightFraction, colorMixHeight)
@@ -168,6 +184,11 @@ function createPointStyle(options: {mode: StyleModeName, layer: TileSet3DLayer})
     } else
     if (mode==="intensity") {
         return {
+            parameters: {
+                min: minParameter,
+                max: maxParameter,
+                gradient: COLOR_SPAN_INTENSITY
+            },
             pointCloudStyle: {
                 ...common,
                 colorExpression: mixmap(intensityFraction, colorMix)

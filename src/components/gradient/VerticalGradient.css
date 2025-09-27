@@ -1,0 +1,79 @@
+.vertical-gradient-container {
+    display: flex;
+    width: 95px; /* Fixed width */
+    height: 100%; /* Full height of the parent */
+    position: relative;
+    padding: 16px; /* Padding to give space around the content */
+    box-sizing: border-box; /* Ensures padding is included in the element's total width */
+    background-color: rgba(0, 0, 0, 0.6);
+    padding-left: 0;
+    padding-top: 0;
+    padding-right: 30px;
+}
+
+.gradient-bar {
+    width: 50%; /* Gradient takes the left 50% */
+    height: 100%; /* Full height */
+    background-size: 100% 100%;
+    user-select: none; /* Prevent text selection */
+}
+
+.marking-area {
+    width: 50%; /* Marking area takes the right 50% */
+    height: 100%; /* Ensuring it has the same height as the gradient */
+    position: relative;
+    padding-left: 10px; /* Space for the marker lines */
+    user-select: none; /* Prevent text selection */
+}
+
+.mark {
+    position: absolute;
+    left: -8px; /* Move the number closer to the left */
+    width: 100%;
+    text-align: left;
+    color: white;
+    font-size: 12px;  /* Increased font size for better visibility */
+    font-weight: bold;
+    z-index: 2;
+    transform: translateX(8px); /* Offset the numbers slightly more */
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7); /* Shadow for numbers */
+}
+
+.marker-line {
+    position: absolute;
+    left: -10px; /* Marker line sits to the left of the number */
+    width: 8px;  /* Increased marker width */
+    height: 3px; /* Thicker line */
+    background-color: #ffcc00; /* Bright yellow color for visibility */
+    z-index: 1;
+    border-radius: 2px;  /* Optional: for rounded edges */
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Shadow for marker line */
+}
+
+.marking-area .marks {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Evenly distributes the markers */
+    height: 100%; /* Ensures the height is filled */
+}
+
+.marking-area .mark {
+    position: absolute;
+    left: -1px; /* Move numbers left */
+    width: 100%;
+    text-align: left;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 2;
+}
+
+.marking-area .marker-line {
+    position: absolute;
+    left: -12px; /* Align marker lines to the left of numbers */
+    width: 8px;
+    height: 3px;
+    background-color: #ffcc00;
+    z-index: 1;
+}

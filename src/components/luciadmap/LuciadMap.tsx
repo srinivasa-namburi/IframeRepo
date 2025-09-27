@@ -7,10 +7,11 @@ import {getReference} from "@luciad/ria/reference/ReferenceProvider.js";
 import {createBounds} from "@luciad/ria/shape/ShapeFactory.js";
 import {Feature} from "@luciad/ria/model/feature/Feature.js";
 import {
+    getPointCloudStyleParameters,
     getRequestInitValues,
     INITIAL_POINTCLOUD_STYLE_MODE,
     loadHSPC,
-    loadOGC3dTiles, setPointStyleMode,
+    loadOGC3dTiles, type PointCloudStyleParameters, setPointStyleMode,
     type StyleModeName
 } from "./utils/HSPCLoader.ts";
 import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
@@ -36,6 +37,7 @@ import {createEffects} from "./utils/createSettings.ts";
 import {CameraNearPlaneManager} from "./utils/CameraNearPlaneManager.ts";
 import {type CameraAngles, CameraChangeDetectionManager} from "./utils/CameraChangeDetectionManager.ts";
 import {CubeAxesIndicator} from "../cubeaxis/CubeAxesIndicator.tsx";
+import {VerticalGradient} from "../gradient/VerticalGradient.tsx";
 
 const defaultProjection = "LUCIAD:XYZ";
 
@@ -75,6 +77,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
 
     const [cameraAngles, setCameraAngles] = useState({yaw:0, pitch:0, roll:0} as CameraAngles);
     const [styleMode, setStyleMode] =  useState(INITIAL_POINTCLOUD_STYLE_MODE as StyleModeName);
+    const [pcParameters, setpcParameters] = useState(undefined as PointCloudStyleParameters | undefined | null)
 
     const divRef = useRef<HTMLDivElement | null>(null);
     const mapRef = useRef<WebGLMap | null>(null);
@@ -191,11 +194,12 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     }
 
 
-
     const setStyleModeAction = (mode: StyleModeName)=> {
         if (activeLayer.current) {
             setStyleMode(mode);
             setPointStyleMode(activeLayer.current, mode);
+            const pcParameters = getPointCloudStyleParameters(activeLayer.current);
+            setpcParameters(pcParameters);
         }
     }
 
@@ -208,6 +212,10 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                 <NavigationHelpPanel />
 
             </div>
+            {pcParameters && <div style={{position: "fixed", top:70, left: 20, height: 320}}>
+                <VerticalGradient gradient={pcParameters.gradient} min={pcParameters.min.value} max={pcParameters.max.value}/>
+            </div>
+            }
             <ViewToolIBar mapRef={mapRef} layerRef={activeLayer}/>
             <MobileJoystickControls
                 onLeftJoystickMove={(dx, dy) => {
