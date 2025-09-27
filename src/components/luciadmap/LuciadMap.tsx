@@ -236,7 +236,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                     userSelect: "none", // optional: prevent text selection
                 }}
             >
-                <HorizonIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} opacity={1}/>
+                <HorizonIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} yaw={cameraAngles.yaw} opacity={1} size={120}/>
             </div>
         </div>
     )
