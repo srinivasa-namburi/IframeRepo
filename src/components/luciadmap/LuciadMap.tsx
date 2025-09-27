@@ -227,7 +227,15 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                 onUp={(active) => joystickSupport.current?.setMoveUp(active)}
                 onDown={(active) => joystickSupport.current?.setMoveDown(active)}
             />
-            <div style={{position: "fixed", bottom:20, left: "50%"}}>
+            <div
+                style={{
+                    position: "fixed",
+                    bottom: 20,
+                    left: "50%",
+                    transform: "translateX(-50%)", // centers horizontally
+                    userSelect: "none", // optional: prevent text selection
+                }}
+            >
                 <HorizonIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} size={100}/>
             </div>
         </div>
