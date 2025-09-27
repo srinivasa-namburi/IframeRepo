@@ -39,23 +39,33 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
             <circle cx={radius} cy={radius} r={radius} fill="#222" stroke="#333" strokeWidth={2} />
 
             {/* Horizon cylinder (behind roll ring) */}
+            {/* Horizon cylinder (behind roll ring) */}
             <g
                 clipPath="url(#horizonClip)"
                 transform={`translate(${radius},${radius}) rotate(${roll}) translate(${-radius},${-radius})`}
             >
-                {/* Sky */}
-                <rect x={0} y={0} width={size} height={size} fill="#4DA6FF" />
-                {/* Ground */}
-                <rect x={0} y={radius + pitchToY(clampedPitch)} width={size} height={size} fill="#6E4B3A" />
-                {/* Horizon line */}
-                <line
-                    x1={0}
-                    y1={radius + pitchToY(clampedPitch)}
-                    x2={size}
-                    y2={radius + pitchToY(clampedPitch)}
-                    stroke="white"
-                    strokeWidth={2}
-                />
+                {/* Horizon Y position */}
+                {(() => {
+                    const horizonY = radius + pitchToY(pitch); // use actual pitch
+                    return (
+                        <>
+                            {/* Sky above horizon */}
+                            <rect x={0} y={0} width={size} height={horizonY} fill="#4DA6FF" />
+                            {/* Ground below horizon */}
+                            <rect x={0} y={horizonY} width={size} height={size - horizonY} fill="#6E4B3A" />
+                            {/* Horizon line */}
+                            <line
+                                x1={0}
+                                y1={horizonY}
+                                x2={size}
+                                y2={horizonY}
+                                stroke="white"
+                                strokeWidth={2}
+                            />
+                        </>
+                    );
+                })()}
+
                 {/* Pitch markings */}
                 {pitchMarks.map((t) => (
                     <g key={t}>
@@ -99,6 +109,7 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
                     </g>
                 ))}
             </g>
+
 
             {/* Roll ring (thick) */}
             <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
