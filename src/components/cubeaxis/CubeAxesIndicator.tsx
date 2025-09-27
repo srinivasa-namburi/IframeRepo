@@ -9,6 +9,28 @@ interface CubeAxesIndicatorProps {
     opacity?: number;
 }
 
+interface AxisProps {
+    color: string;
+    rotation: string;
+    label: string;
+    length: number;
+}
+
+const Axis: React.FC<AxisProps> = ({ color, rotation, label, length }) => {
+    return (
+        <div
+            className="axis-wrapper"
+            style={{ color, transform: rotation }}
+        >
+            <div className="axis" style={{ width: length }} />
+            <div className="axis second" style={{ width: length }} />
+            <div className="axis-end" style={{ backgroundColor: color }}>
+                {label}
+            </div>
+        </div>
+    );
+};
+
 export const CubeAxesIndicator: React.FC<CubeAxesIndicatorProps> = ({
                                                                         pitch,
                                                                         roll,
@@ -16,13 +38,9 @@ export const CubeAxesIndicator: React.FC<CubeAxesIndicatorProps> = ({
                                                                         size = 200,
                                                                         opacity = 1,
                                                                     }) => {
-    const axisScale = 1.1; // default axis scale
     const half = size / 2;
-    const SOrigin = 1.1; // origin shift factor
-
-    const shiftX = -SOrigin * half;
-    const shiftY = SOrigin * half;
-    const shiftZ = SOrigin * half;
+    const axisLength = half * 2.2; // slightly longer than cube
+    const originShift = 1.1 * half;
 
     const cubeStyle: React.CSSProperties = {
         width: `${size}px`,
@@ -30,10 +48,10 @@ export const CubeAxesIndicator: React.FC<CubeAxesIndicatorProps> = ({
         transform: `rotateZ(${roll}deg) rotateX(${pitch}deg) rotateY(${yaw}deg)`,
         opacity,
         "--half": `${half}px`,
-        "--axis-scale": `${half * 2 * axisScale}px`, // full cube face width × axisScale
+        "--axis-scale": `${axisLength}px`,
     } as React.CSSProperties;
 
-    const originTranslate = `translate3d(${shiftX}px, ${shiftY}px, ${shiftZ}px)`;
+    const originTranslate = `translate3d(${-originShift}px, ${originShift}px, ${originShift}px)`;
 
     return (
         <div className="cube-container" style={{ width: size, height: size }}>
@@ -46,23 +64,25 @@ export const CubeAxesIndicator: React.FC<CubeAxesIndicatorProps> = ({
                 <div className="face top">Top</div>
                 <div className="face bottom">Bottom</div>
 
-                {/* X-axis → right (+X) */}
-                <div className="axis-wrapper" style={{ color: "red", transform: `${originTranslate} rotateY(0deg)` }}>
-                    <div className="axis"></div>
-                    <div className="axis second"></div>
-                </div>
-
-                {/* Y-axis → back (-Y) */}
-                <div className="axis-wrapper" style={{ color: "green", transform: `${originTranslate} rotateY(90deg)` }}>
-                    <div className="axis"></div>
-                    <div className="axis second"></div>
-                </div>
-
-                {/* Z-axis → top (+Z) */}
-                <div className="axis-wrapper" style={{ color: "blue", transform: `${originTranslate} rotateZ(-90deg)` }}>
-                    <div className="axis"></div>
-                    <div className="axis second"></div>
-                </div>
+                {/* Axes */}
+                <Axis
+                    color="red"
+                    rotation={`${originTranslate} rotateY(0deg)`} // X → right
+                    label="X"
+                    length={axisLength}
+                />
+                <Axis
+                    color="green"
+                    rotation={`${originTranslate} rotateX(-90deg) rotateZ(90deg)`} // Y → back
+                    label="Y"
+                    length={axisLength}
+                />
+                <Axis
+                    color="blue"
+                    rotation={`${originTranslate} rotateZ(-90deg)`} // Z → up
+                    label="Z"
+                    length={axisLength}
+                />
             </div>
         </div>
     );

@@ -2,8 +2,8 @@
     perspective: 800px;
     position: relative;
     margin: auto;
-    pointer-events: none;   /* Disable mouse interaction */
-    user-select: none;      /* Prevent text/image selection */
+    pointer-events: none;
+    user-select: none;
 }
 
 .cube {
@@ -30,7 +30,6 @@
     user-select: none;
 }
 
-/* Cube faces */
 .front  { transform: translateZ(var(--half, 100px)); }
 .back   { transform: rotateY(180deg) translateZ(var(--half, 100px)); }
 .right  { transform: rotateY(90deg) translateZ(var(--half, 100px)); }
@@ -38,7 +37,6 @@
 .top    { transform: rotateX(90deg) translateZ(var(--half, 100px)); }
 .bottom { transform: rotateX(-90deg) translateZ(var(--half, 100px)); }
 
-/* Axis wrapper */
 .axis-wrapper {
     position: absolute;
     top: 50%;
@@ -49,23 +47,17 @@
     user-select: none;
 }
 
-/* Main axis cuboid using --axis-scale */
-.axis,
-.axis.second {
-    width: var(--axis-scale);
+.axis, .axis.second {
     height: 2px;
-    transform-origin: 0 50%;
     background-color: currentColor;
+    transform-origin: 0 50%;
     pointer-events: none;
-    user-select: none;
 }
 
-/* Second perpendicular ribbon for 3D beam */
 .axis.second {
     transform: rotateX(90deg);
 }
 
-/* Arrowheads for both ribbons */
 .axis::after,
 .axis.second::after {
     content: '';
@@ -81,7 +73,20 @@
     pointer-events: none;
 }
 
-/* Cube half size */
-:root {
-    --half: 100px;
+/* Circle label at end of axis */
+.axis-end {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translate(50%, -50%) rotate(0deg);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    pointer-events: none;
 }
