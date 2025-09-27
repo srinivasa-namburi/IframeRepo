@@ -25,7 +25,7 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
     const specialCircles = [-45, 45];
 
     // Scale pitch to Y coordinate
-    const pitchToY = (p: number) => -(p / maxPitch) * radius * 2; // double spacing
+    const pitchToY = (p: number) => (p / maxPitch) * radius * 2; // double spacing
 
     return (
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
