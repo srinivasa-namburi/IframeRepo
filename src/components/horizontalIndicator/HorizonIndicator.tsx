@@ -9,17 +9,18 @@ interface HorizonIndicatorProps {
 export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll, size }) => {
     const radius = size / 2;
     const maxPitch = 90;
-    const R = 15;
+    const R = 15; // half-circle radius for pitch indicator
     const clampedPitch = Math.max(Math.min(pitch, maxPitch), -maxPitch);
 
-    // Pitch markings (10° steps)
+    // Pitch markings (10° steps, doubled spacing)
     const pitchMarks = Array.from({ length: 9 }, (_, i) => (i + 1) * 10);
 
     // Roll ring markings
     const rollMarks = [-90, -60, -30, -20, -10, 0, 10, 20, 30, 60, 90];
     const specialCircles = [-45, 45];
 
-    const pitchToY = (p: number) => -(p / maxPitch) * radius * 2;
+    // Scale pitch to Y coordinate
+    const pitchToY = (p: number) => -(p / maxPitch) * radius * 2; // double spacing
 
     return (
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -53,7 +54,7 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
                 {/* Pitch markings */}
                 {pitchMarks.map((t) => (
                     <g key={t}>
-                        {/* Upper (blue) */}
+                        {/* Upper */}
                         <line
                             x1={radius - 10}
                             x2={radius + 10}
@@ -72,7 +73,7 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
                             {t}
                         </text>
 
-                        {/* Lower (brown) */}
+                        {/* Lower */}
                         <line
                             x1={radius - 10}
                             x2={radius + 10}
@@ -94,7 +95,7 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
                 ))}
             </g>
 
-            {/* Roll ring (rotates clockwise for positive roll) */}
+            {/* Roll ring */}
             <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
                 {rollMarks.map((r) => {
                     const angleRad = (r * Math.PI) / 180;
@@ -129,13 +130,24 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
                 })}
             </g>
 
-            {/* Pitch indicator (top half-circle) */}
+            {/* Pitch indicator */}
             <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
                 {/* Top half-circle */}
-                <path d={`M -${R},0 A ${R},${R} 0 0,0 ${R},0`} fill="transparent" stroke="yellow" strokeWidth={3} />
-                {/* Wings even longer */}
+                <path
+                    d={`M -${R},0 A ${R},${R} 0 0,0 ${R},0`}
+                    fill="transparent"
+                    stroke="yellow"
+                    strokeWidth={3}
+                />
+                {/* Wings */}
                 <line x1={-R} y1={0} x2={-60} y2={0} stroke="yellow" strokeWidth={3} />
                 <line x1={R} y1={0} x2={60} y2={0} stroke="yellow" strokeWidth={3} />
+
+                {/* Roll indicator triangle at very top, pointing down */}
+                <polygon
+                    points={`0,-${radius - 6} -6,-${radius} 6,-${radius}`}
+                    fill="yellow"
+                />
             </g>
         </svg>
     );
