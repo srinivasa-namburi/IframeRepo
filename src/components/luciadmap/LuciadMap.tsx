@@ -230,13 +230,13 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
             <div
                 style={{
                     position: "fixed",
-                    bottom: 20,
+                    bottom: 25,
                     left: "50%",
                     transform: "translateX(-50%)", // centers horizontally
                     userSelect: "none", // optional: prevent text selection
                 }}
             >
-                <HorizonIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} yaw={cameraAngles.yaw} opacity={1} size={120}/>
+                <HorizonIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} yaw={cameraAngles.yaw} opacity={0.8} size={100}/>
             </div>
         </div>
     )

@@ -41,6 +41,10 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({
     const yawSectors = Array.from({ length: 16 }, (_, i) => i * 22.5);
     const yawCardinals = [0, 90, 180, 270];
 
+    const markLength = size * 0.08; // proportional to size
+    const markTextOffset = size * 0.035; // proportional to size
+    const markFontSize = Math.max(8, size * 0.08); // minimum font size 8
+
     return (
         <svg
             width={size}
@@ -78,35 +82,35 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({
                     {pitchMarks.map((t) => (
                         <g key={t}>
                             <line
-                                x1={radius - 10}
-                                x2={radius + 10}
+                                x1={radius - markLength / 2}
+                                x2={radius + markLength / 2}
                                 y1={radius + pitchToY(pitch + t)}
                                 y2={radius + pitchToY(pitch + t)}
                                 stroke="white"
                                 strokeWidth={1}
                             />
                             <text
-                                x={radius + 14}
-                                y={radius + pitchToY(pitch + t) + 4}
+                                x={radius + markLength / 2 + markTextOffset}
+                                y={radius + pitchToY(pitch + t) + markFontSize / 3}
                                 fill="white"
-                                fontSize={10}
+                                fontSize={markFontSize}
                                 fontFamily="monospace"
                             >
                                 {t}
                             </text>
                             <line
-                                x1={radius - 10}
-                                x2={radius + 10}
+                                x1={radius - markLength / 2}
+                                x2={radius + markLength / 2}
                                 y1={radius + pitchToY(pitch - t)}
                                 y2={radius + pitchToY(pitch - t)}
                                 stroke="white"
                                 strokeWidth={1}
                             />
                             <text
-                                x={radius + 14}
-                                y={radius + pitchToY(pitch - t) + 4}
+                                x={radius + markLength / 2 + markTextOffset}
+                                y={radius + pitchToY(pitch - t) + markFontSize / 3}
                                 fill="white"
-                                fontSize={10}
+                                fontSize={markFontSize}
                                 fontFamily="monospace"
                             >
                                 {t}
@@ -253,21 +257,9 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({
                     />
                 </g>
             </g>
-            {/* Smooth Pitch indicator */}
-            <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
-                <path
-                    d={`
-          M ${-wingLength},0
-          L ${-pitchR},0
-          A ${pitchR},${pitchR} 0 0,0 ${pitchR},0
-          L ${wingLength},0
-        `}
-                    fill="transparent"
-                    stroke="yellow"
-                    strokeWidth={wingWidth}
-                    strokeLinecap="round"
-                />
-                {/* Center dot */}
+
+            {/* Center dot */}
+            <g transform={`translate(${radius},${radius})`}>
                 <circle cx={0} cy={0} r={wingWidth / 2} fill="yellow" />
             </g>
         </svg>

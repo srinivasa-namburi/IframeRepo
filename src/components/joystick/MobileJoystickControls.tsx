@@ -14,8 +14,8 @@ const ZIndexJoysticks = 999;
 const maxRadius = 50;
 const deadZone = 0.1; // Dead zone: ignore small movements near center
 
-const JoystickBottom = 30;
-const JoystickSide = 30;
+const JoystickBottom = 25;
+const JoystickSide = 25;
 const JoystickWidthHeight = 120;
 const JoystickButtonGap = 4;
 
