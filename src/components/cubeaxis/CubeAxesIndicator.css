@@ -41,23 +41,18 @@
     transform-origin: 0 50%;
 }
 
-/* Main axis cuboid (1.2 × cube face side) */
-.axis {
-    position: absolute;
-    width: calc(var(--half) * 1.2); /* length = 1.2 × cube face side */
-    height: 2px;                     /* thickness */
+/* Main axis cuboid using --axis-scale */
+.axis,
+.axis.second {
+    width: var(--axis-scale); /* full axis length from TSX */
+    height: 2px;
     transform-origin: 0 50%;
     background-color: currentColor;
 }
 
 /* Second perpendicular ribbon for 3D beam */
 .axis.second {
-    position: absolute;
-    width: calc(var(--half) * 1.2); /* same length */
-    height: 2px;
-    transform-origin: 0 50%;
-    background-color: currentColor;
-    transform: rotateX(90deg); /* perpendicular to main ribbon */
+    transform: rotateX(90deg);
 }
 
 /* Arrowheads for both ribbons */
