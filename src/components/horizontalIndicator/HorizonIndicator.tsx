@@ -18,7 +18,7 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({
     const radius = size / 2;
     const maxPitch = 90;
 
-    const ringWidth = size * 0.05;
+    const ringWidth = size * 0.1;
 
     const yawOuterRadius = radius;
     const yawInnerRadius = yawOuterRadius - ringWidth;
