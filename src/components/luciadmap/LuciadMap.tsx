@@ -238,9 +238,8 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
             <div
                 style={{
                     position: "fixed",
-                    bottom: 40,
-                    left: "50%",
-                    transform: "translateX(-50%)", // centers horizontally
+                    top: 100,
+                    right: 20,
                     userSelect: "none", // optional: prevent text selection
                     pointerEvents: "none"
                 }}
