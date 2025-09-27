@@ -13,7 +13,7 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
     const clampedPitch = Math.max(Math.min(pitch, maxPitch), -maxPitch);
 
     // Roll ring width proportional to size
-    const ringWidth = size * 0.05; // 10% of total size
+    const ringWidth = size * 0.05; // 5% of total size
     const ringOuterRadius = radius - 2;
     const ringInnerRadius = ringOuterRadius - ringWidth;
 
@@ -102,15 +102,29 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
 
             {/* Roll ring (thick) */}
             <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
-                {/* Ring background */}
-                <circle
-                    cx={0}
-                    cy={0}
-                    r={(ringInnerRadius + ringOuterRadius) / 2}
-                    fill="none"
-                    stroke="black"
-                    strokeWidth={ringWidth}
+                {/* Ring top half (sky blue) */}
+                <path
+                    d={`
+            M ${-ringOuterRadius},0
+            A ${ringOuterRadius} ${ringOuterRadius} 0 0 1 ${ringOuterRadius},0
+            L ${ringInnerRadius} 0
+            A ${ringInnerRadius} ${ringInnerRadius} 0 0 0 ${-ringInnerRadius},0
+            Z
+          `}
+                    fill="#4DA6FF"
                 />
+                {/* Ring bottom half (brown) */}
+                <path
+                    d={`
+            M ${-ringOuterRadius},0
+            A ${ringOuterRadius} ${ringOuterRadius} 0 0 0 ${ringOuterRadius},0
+            L ${ringInnerRadius} 0
+            A ${ringInnerRadius} ${ringInnerRadius} 0 0 1 ${-ringInnerRadius},0
+            Z
+          `}
+                    fill="#6E4B3A"
+                />
+
                 {/* Ring border (outer) */}
                 <circle
                     cx={0}
@@ -165,13 +179,12 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
             {/* Roll indicator triangle on top of ring, pointing down */}
             <polygon
                 points={`
-      ${radius},${radius - ringOuterRadius + ringWidth * 0.5} 
-      ${radius - ringWidth / 3},${radius - ringOuterRadius} 
-      ${radius + ringWidth / 3},${radius - ringOuterRadius}
-    `}
+          ${radius},${radius - ringOuterRadius + ringWidth * 0.5} 
+          ${radius - ringWidth / 3},${radius - ringOuterRadius} 
+          ${radius + ringWidth / 3},${radius - ringOuterRadius}
+        `}
                 fill="yellow"
             />
-
 
             {/* Pitch indicator */}
             <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
