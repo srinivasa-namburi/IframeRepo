@@ -19,7 +19,7 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
     const rollMarks = [-90, -60, -30, -20, -10, 0, 10, 20, 30, 60, 90];
     const specialCircles = [-45, 45];
 
-    const pitchToY = (p: number) => -(p / maxPitch) * radius;
+    const pitchToY = (p: number) => -(p / maxPitch) * radius * 2;
 
     return (
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
