@@ -10,7 +10,6 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
     const radius = size / 2;
     const maxPitch = 90;
     const R = 15; // half-circle radius for pitch indicator
-    const clampedPitch = Math.max(Math.min(pitch, maxPitch), -maxPitch);
 
     // Roll ring width proportional to size
     const ringWidth = size * 0.05; // 5% of total size
@@ -27,6 +26,10 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
     // Scale pitch to Y coordinate
     const pitchToY = (p: number) => (p / maxPitch) * radius * 2; // double spacing
 
+    // Compute horizon Y and clamp to SVG bounds
+    const horizonY = radius + pitchToY(pitch);
+    const clampedHorizonY = Math.min(Math.max(horizonY, 0), size);
+
     return (
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
             <defs>
@@ -39,32 +42,23 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
             <circle cx={radius} cy={radius} r={radius} fill="#222" stroke="#333" strokeWidth={2} />
 
             {/* Horizon cylinder (behind roll ring) */}
-            {/* Horizon cylinder (behind roll ring) */}
             <g
                 clipPath="url(#horizonClip)"
                 transform={`translate(${radius},${radius}) rotate(${roll}) translate(${-radius},${-radius})`}
             >
-                {/* Horizon Y position */}
-                {(() => {
-                    const horizonY = radius + pitchToY(pitch); // use actual pitch
-                    return (
-                        <>
-                            {/* Sky above horizon */}
-                            <rect x={0} y={0} width={size} height={horizonY} fill="#4DA6FF" />
-                            {/* Ground below horizon */}
-                            <rect x={0} y={horizonY} width={size} height={size - horizonY} fill="#6E4B3A" />
-                            {/* Horizon line */}
-                            <line
-                                x1={0}
-                                y1={horizonY}
-                                x2={size}
-                                y2={horizonY}
-                                stroke="white"
-                                strokeWidth={2}
-                            />
-                        </>
-                    );
-                })()}
+                {/* Sky above horizon */}
+                <rect x={0} y={0} width={size} height={clampedHorizonY} fill="#4DA6FF" />
+                {/* Ground below horizon */}
+                <rect x={0} y={clampedHorizonY} width={size} height={size - clampedHorizonY} fill="#6E4B3A" />
+                {/* Horizon line */}
+                <line
+                    x1={0}
+                    y1={clampedHorizonY}
+                    x2={size}
+                    y2={clampedHorizonY}
+                    stroke="white"
+                    strokeWidth={2}
+                />
 
                 {/* Pitch markings */}
                 {pitchMarks.map((t) => (
@@ -73,14 +67,14 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
                         <line
                             x1={radius - 10}
                             x2={radius + 10}
-                            y1={radius + pitchToY(clampedPitch + t)}
-                            y2={radius + pitchToY(clampedPitch + t)}
+                            y1={radius + pitchToY(pitch + t)}
+                            y2={radius + pitchToY(pitch + t)}
                             stroke="white"
                             strokeWidth={1}
                         />
                         <text
                             x={radius + 14}
-                            y={radius + pitchToY(clampedPitch + t) + 4}
+                            y={radius + pitchToY(pitch + t) + 4}
                             fill="white"
                             fontSize={10}
                             fontFamily="monospace"
@@ -92,14 +86,14 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
                         <line
                             x1={radius - 10}
                             x2={radius + 10}
-                            y1={radius + pitchToY(clampedPitch - t)}
-                            y2={radius + pitchToY(clampedPitch - t)}
+                            y1={radius + pitchToY(pitch - t)}
+                            y2={radius + pitchToY(pitch - t)}
                             stroke="white"
                             strokeWidth={1}
                         />
                         <text
                             x={radius + 14}
-                            y={radius + pitchToY(clampedPitch - t) + 4}
+                            y={radius + pitchToY(pitch - t) + 4}
                             fill="white"
                             fontSize={10}
                             fontFamily="monospace"
@@ -110,50 +104,34 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
                 ))}
             </g>
 
-
             {/* Roll ring (thick) */}
             <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
                 {/* Ring top half (sky blue) */}
                 <path
                     d={`
-            M ${-ringOuterRadius},0
-            A ${ringOuterRadius} ${ringOuterRadius} 0 0 1 ${ringOuterRadius},0
-            L ${ringInnerRadius} 0
-            A ${ringInnerRadius} ${ringInnerRadius} 0 0 0 ${-ringInnerRadius},0
-            Z
-          `}
+                        M ${-ringOuterRadius},0
+                        A ${ringOuterRadius} ${ringOuterRadius} 0 0 1 ${ringOuterRadius},0
+                        L ${ringInnerRadius} 0
+                        A ${ringInnerRadius} ${ringInnerRadius} 0 0 0 ${-ringInnerRadius},0
+                        Z
+                    `}
                     fill="#4DA6FF"
                 />
                 {/* Ring bottom half (brown) */}
                 <path
                     d={`
-            M ${-ringOuterRadius},0
-            A ${ringOuterRadius} ${ringOuterRadius} 0 0 0 ${ringOuterRadius},0
-            L ${ringInnerRadius} 0
-            A ${ringInnerRadius} ${ringInnerRadius} 0 0 1 ${-ringInnerRadius},0
-            Z
-          `}
+                        M ${-ringOuterRadius},0
+                        A ${ringOuterRadius} ${ringOuterRadius} 0 0 0 ${ringOuterRadius},0
+                        L ${ringInnerRadius} 0
+                        A ${ringInnerRadius} ${ringInnerRadius} 0 0 1 ${-ringInnerRadius},0
+                        Z
+                    `}
                     fill="#6E4B3A"
                 />
 
-                {/* Ring border (outer) */}
-                <circle
-                    cx={0}
-                    cy={0}
-                    r={ringOuterRadius}
-                    fill="none"
-                    stroke="yellow"
-                    strokeWidth={2}
-                />
-                {/* Ring border (inner) */}
-                <circle
-                    cx={0}
-                    cy={0}
-                    r={ringInnerRadius}
-                    fill="none"
-                    stroke="yellow"
-                    strokeWidth={2}
-                />
+                {/* Ring borders */}
+                <circle cx={0} cy={0} r={ringOuterRadius} fill="none" stroke="yellow" strokeWidth={2} />
+                <circle cx={0} cy={0} r={ringInnerRadius} fill="none" stroke="yellow" strokeWidth={2} />
 
                 {/* Roll ticks */}
                 {rollMarks.map((r) => {
@@ -182,31 +160,24 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
                     const ringRadius = (ringInnerRadius + ringOuterRadius) / 2;
                     const cx = Math.sin(angleRad) * ringRadius;
                     const cy = -Math.cos(angleRad) * ringRadius;
-                    const specialCircleRadius = Math.min(4, ringWidth * 0.4); // scale with ring
+                    const specialCircleRadius = Math.min(4, ringWidth * 0.4);
                     return <circle key={r} cx={cx} cy={cy} r={specialCircleRadius} fill="red" />;
                 })}
             </g>
 
-            {/* Roll indicator triangle on top of ring, pointing down */}
+            {/* Roll indicator triangle on top of ring */}
             <polygon
                 points={`
-          ${radius},${radius - ringOuterRadius + ringWidth * 0.5} 
-          ${radius - ringWidth / 3},${radius - ringOuterRadius} 
-          ${radius + ringWidth / 3},${radius - ringOuterRadius}
-        `}
+                    ${radius},${radius - ringOuterRadius + ringWidth * 0.5}
+                    ${radius - ringWidth / 3},${radius - ringOuterRadius}
+                    ${radius + ringWidth / 3},${radius - ringOuterRadius}
+                `}
                 fill="yellow"
             />
 
             {/* Pitch indicator */}
             <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
-                {/* Top half-circle */}
-                <path
-                    d={`M -${R},0 A ${R},${R} 0 0,0 ${R},0`}
-                    fill="transparent"
-                    stroke="yellow"
-                    strokeWidth={3}
-                />
-                {/* Wings */}
+                <path d={`M -${R},0 A ${R},${R} 0 0,0 ${R},0`} fill="transparent" stroke="yellow" strokeWidth={3} />
                 <line x1={-R} y1={0} x2={-60} y2={0} stroke="yellow" strokeWidth={3} />
                 <line x1={R} y1={0} x2={60} y2={0} stroke="yellow" strokeWidth={3} />
             </g>
