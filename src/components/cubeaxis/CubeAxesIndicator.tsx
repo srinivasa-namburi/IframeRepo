@@ -1,39 +1,34 @@
 import React from "react";
 import "./CubeAxesIndicator.css";
 
-interface CemereAnglesProps {
-    pitch: number; // degrees
-    roll: number;  // degrees
-    yaw: number;   // degrees
-    size?: number; // default 200
+interface CubeAxesIndicatorProps {
+    pitch: number;
+    roll: number;
+    yaw: number;
+    size?: number;
     opacity?: number;
 }
 
-export const CubeAxesIndicator: React.FC<CemereAnglesProps> = ({
-                                                                   pitch,
-                                                                   roll,
-                                                                   yaw,
-                                                                   size = 200,
-                                                                   opacity = 1,
-                                                               }) => {
+export const CubeAxesIndicator: React.FC<CubeAxesIndicatorProps> = ({
+                                                                        pitch,
+                                                                        roll,
+                                                                        yaw,
+                                                                        size = 200,
+                                                                        opacity = 1,
+                                                                    }) => {
     const half = size / 2;
-
     const cubeStyle: React.CSSProperties = {
         width: `${size}px`,
         height: `${size}px`,
-        transform: `
-    rotateZ(${roll}deg)
-    rotateX(${pitch}deg)
-    rotateY(${yaw}deg)
-  `,
+        transform: `rotateZ(${roll}deg) rotateX(${pitch}deg) rotateY(${yaw}deg)`,
         opacity,
         "--half": `${half}px`,
-        "--font-size": `${size * 0.20}px`, // bigger proportional font size
     } as React.CSSProperties;
 
     return (
         <div className="cube-container" style={{ width: size, height: size }}>
             <div className="cube" style={cubeStyle}>
+                {/* Cube faces */}
                 <div className="face front">Front</div>
                 <div className="face back">Back</div>
                 <div className="face left">Left</div>
@@ -41,9 +36,23 @@ export const CubeAxesIndicator: React.FC<CemereAnglesProps> = ({
                 <div className="face top">Top</div>
                 <div className="face bottom">Bottom</div>
 
-                <div className="axis x-axis">X</div>
-                <div className="axis y-axis">Y</div>
-                <div className="axis z-axis">Z</div>
+                {/* X-axis → right (+X) */}
+                <div className="axis-wrapper" style={{ color: 'red', transform: 'rotateY(0deg)' }}>
+                    <div className="axis"></div>
+                    <div className="axis second"></div>
+                </div>
+
+                {/* Y-axis → back (-Y) */}
+                <div className="axis-wrapper" style={{ color: 'green', transform: 'rotateY(90deg)' }}>
+                    <div className="axis"></div>
+                    <div className="axis second"></div>
+                </div>
+
+                {/* Z-axis → top (+Z) */}
+                <div className="axis-wrapper" style={{ color: 'blue', transform: 'rotateZ(-90deg)' }}>
+                    <div className="axis"></div>
+                    <div className="axis second"></div>
+                </div>
             </div>
         </div>
     );
