@@ -157,7 +157,8 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
                     const ringRadius = (ringInnerRadius + ringOuterRadius) / 2;
                     const cx = Math.sin(angleRad) * ringRadius;
                     const cy = -Math.cos(angleRad) * ringRadius;
-                    return <circle key={r} cx={cx} cy={cy} r={4} fill="red" />;
+                    const specialCircleRadius = Math.min(4, ringWidth * 0.4); // scale with ring
+                    return <circle key={r} cx={cx} cy={cy} r={specialCircleRadius} fill="red" />;
                 })}
             </g>
 
