@@ -33,7 +33,9 @@ import {SceneNavigationControllerJoystick} from "../joystick/SceneNavigationCont
 import type {JoystickPanSupport} from "../joystick/JoystickPanSupport.ts";
 import {createAxes, createSky} from "./utils/createSettings.ts";
 import {createEffects} from "./utils/createSettings.ts";
-import {CameraNearPlaneManager} from "./CameraNearPlaneManager.ts";
+import {CameraNearPlaneManager} from "./utils/CameraNearPlaneManager.ts";
+import {HorizonIndicator} from "../horizontalIndicator/HorizonIndicator.tsx";
+import {type CameraAngles, CameraChangeDetectionManager} from "./utils/CameraChangeDetectionManager.ts";
 
 const defaultProjection = "LUCIAD:XYZ";
 
@@ -71,6 +73,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     const [bgColor, /*setBgColor*/] = React.useState<BackgroundColor>(ColorPickerFindColor(AvailableBackgroundColors, storedColor));
     const joystickSupport = useRef(null as JoystickPanSupport | null | undefined);
 
+    const [cameraAngles, setCameraAngles] = useState({yaw:0, pitch:0, roll:0} as CameraAngles);
     const [styleMode, setStyleMode] =  useState(INITIAL_POINTCLOUD_STYLE_MODE as StyleModeName);
 
     const divRef = useRef<HTMLDivElement | null>(null);
@@ -174,6 +177,12 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
 
         const manager = new CameraNearPlaneManager();
         manager.setCameraNearPlane(map);
+        const cameraAngleDetector = new CameraChangeDetectionManager();
+
+// Attach the listener to your map
+        cameraAngleDetector.setCameraUpdatedListener(map, (newCameraAngles: CameraAngles) => {
+            setCameraAngles(newCameraAngles);
+        });
 
         map.onClick = ()=> {
             map.domNode.focus();
@@ -218,6 +227,9 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                 onUp={(active) => joystickSupport.current?.setMoveUp(active)}
                 onDown={(active) => joystickSupport.current?.setMoveDown(active)}
             />
+            <div style={{position: "fixed", bottom:20, left: "50%"}}>
+                <HorizonIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} size={100}/>
+            </div>
         </div>
     )
 }
