@@ -11,19 +11,19 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
     const maxPitch = 90;
     const clampedPitch = Math.max(Math.min(pitch, maxPitch), -maxPitch);
 
-    // Pitch markings every 10°
-    const pitchTicks = Array.from({ length: 10 }, (_, i) => (i + 1) * 10);
+    // Pitch markings (10° steps)
+    const pitchMarks = Array.from({ length: 9 }, (_, i) => (i + 1) * 10);
 
-    // Roll markings
-    const rollTicks = [0, 10, 20, 30, 60, 90];
+    // Roll ring markings
+    const rollMarks = [-90, -60, -30, -20, -10, 0, 10, 20, 30, 60, 90];
+    const specialCircles = [-45, 45];
 
-    // Map pitch to vertical offset
-    const pitchToY = (p: number) => (-p / maxPitch) * radius;
+    const pitchToY = (p: number) => -(p / maxPitch) * radius;
 
     return (
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
             <defs>
-                <clipPath id="circleClip">
+                <clipPath id="horizonClip">
                     <circle cx={radius} cy={radius} r={radius} />
                 </clipPath>
             </defs>
@@ -31,91 +31,108 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
             {/* Outer circle */}
             <circle cx={radius} cy={radius} r={radius} fill="#222" stroke="#333" strokeWidth={2} />
 
-            {/* Horizon Cylinder */}
+            {/* Horizon cylinder */}
             <g
-                clipPath="url(#circleClip)"
+                clipPath="url(#horizonClip)"
                 transform={`translate(${radius},${radius}) rotate(${roll}) translate(${-radius},${-radius})`}
             >
                 {/* Sky */}
                 <rect x={0} y={0} width={size} height={size} fill="#4DA6FF" />
                 {/* Ground */}
-                <rect
-                    x={0}
-                    y={radius + pitchToY(clampedPitch)}
-                    width={size}
-                    height={size / 2 + radius} // ensure full brown coverage
-                    fill="#6E4B3A"
-                />
+                <rect x={0} y={radius + pitchToY(clampedPitch)} width={size} height={size} fill="#6E4B3A" />
                 {/* Horizon line */}
                 <line
                     x1={0}
                     y1={radius + pitchToY(clampedPitch)}
                     x2={size}
                     y2={radius + pitchToY(clampedPitch)}
-                    stroke="#FFF"
+                    stroke="white"
                     strokeWidth={2}
                 />
                 {/* Pitch markings */}
-                {pitchTicks.map((t) =>
-                    [1, -1].map((dir) => {
-                        const y = radius + pitchToY(clampedPitch - dir * t);
-                        return (
-                            <g key={`pitch-${t}-${dir}`}>
-                                <line x1={radius - 10} x2={radius + 10} y1={y} y2={y} stroke="white" strokeWidth={1.5} />
-                                <text x={radius + 14} y={y + 4} fill="white" fontSize={10} fontFamily="monospace">
-                                    {t}
-                                </text>
-                            </g>
-                        );
-                    })
-                )}
+                {pitchMarks.map((t) => (
+                    <g key={t}>
+                        {/* Upper (blue) */}
+                        <line
+                            x1={radius - 10}
+                            x2={radius + 10}
+                            y1={radius + pitchToY(clampedPitch + t)}
+                            y2={radius + pitchToY(clampedPitch + t)}
+                            stroke="white"
+                            strokeWidth={1}
+                        />
+                        <text
+                            x={radius + 14}
+                            y={radius + pitchToY(clampedPitch + t) + 4}
+                            fill="white"
+                            fontSize={10}
+                            fontFamily="monospace"
+                        >
+                            {t}
+                        </text>
+
+                        {/* Lower (brown) */}
+                        <line
+                            x1={radius - 10}
+                            x2={radius + 10}
+                            y1={radius + pitchToY(clampedPitch - t)}
+                            y2={radius + pitchToY(clampedPitch - t)}
+                            stroke="white"
+                            strokeWidth={1}
+                        />
+                        <text
+                            x={radius + 14}
+                            y={radius + pitchToY(clampedPitch - t) + 4}
+                            fill="white"
+                            fontSize={10}
+                            fontFamily="monospace"
+                        >
+                            {t}
+                        </text>
+                    </g>
+                ))}
             </g>
 
-            {/* Fixed pitch indicator (half-circle with wings) */}
+            {/* Roll ring (rotates clockwise for positive roll) */}
             <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
-                <path
-                    d={`M -20 0 A 20 20 0 0 1 20 0`}
-                    fill="transparent"
-                    stroke="yellow"
-                    strokeWidth={2}
-                />
-                <line x1={-20} y1={0} x2={-30} y2={0} stroke="yellow" strokeWidth={2} />
-                <line x1={20} y1={0} x2={30} y2={0} stroke="yellow" strokeWidth={2} />
-            </g>
+                {rollMarks.map((r) => {
+                    const angleRad = (r * Math.PI) / 180;
+                    const outerR = radius - 5;
+                    const innerR = radius - 15;
 
-            {/* Roll ring */}
-            <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
-                {rollTicks.map((t) => {
-                    const angle = (t * Math.PI) / 180;
-                    const x = Math.sin(angle) * (radius - 12);
-                    const y = -Math.cos(angle) * (radius - 12);
+                    const x1 = Math.sin(angleRad) * innerR;
+                    const y1 = -Math.cos(angleRad) * innerR;
+                    const x2 = Math.sin(angleRad) * outerR;
+                    const y2 = -Math.cos(angleRad) * outerR;
+
                     return (
-                        <g key={`roll-${t}`}>
-                            <line x1={x} y1={y} x2={x * 0.85} y2={y * 0.85} stroke="white" strokeWidth={1.5} />
-                            <line x1={-x} y1={y} x2={-x * 0.85} y2={y * 0.85} stroke="white" strokeWidth={1.5} />
-                            <text
-                                x={x * 0.7}
-                                y={y * 0.7 + 4}
-                                fill="white"
-                                fontSize={8}
-                                fontFamily="monospace"
-                                textAnchor={x < 0 ? "end" : "start"}
-                            >
-                                {t}
-                            </text>
-                            <text
-                                x={-x * 0.7}
-                                y={y * 0.7 + 4}
-                                fill="white"
-                                fontSize={8}
-                                fontFamily="monospace"
-                                textAnchor={-x < 0 ? "end" : "start"}
-                            >
-                                {t}
-                            </text>
-                        </g>
+                        <line
+                            key={r}
+                            x1={x1}
+                            y1={y1}
+                            x2={x2}
+                            y2={y2}
+                            stroke="yellow"
+                            strokeWidth={1.5}
+                        />
                     );
                 })}
+
+                {/* Special red circles at ±45° */}
+                {specialCircles.map((r) => {
+                    const angleRad = (r * Math.PI) / 180;
+                    const ringRadius = radius - 10;
+                    const cx = Math.sin(angleRad) * ringRadius;
+                    const cy = -Math.cos(angleRad) * ringRadius;
+                    return <circle key={r} cx={cx} cy={cy} r={4} fill="red" />;
+                })}
+            </g>
+
+            {/* Pitch indicator (half-circle with wings) */}
+            <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
+                <path d={`M -15,0 A 15,15 0 0,1 15,0`} fill="transparent" stroke="yellow" strokeWidth={2} />
+                <line x1={-15} y1={0} x2={-25} y2={0} stroke="yellow" strokeWidth={2} />
+                <line x1={15} y1={0} x2={25} y2={0} stroke="yellow" strokeWidth={2} />
             </g>
         </svg>
     );
