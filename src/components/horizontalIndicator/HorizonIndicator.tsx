@@ -128,11 +128,13 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
                 })}
             </g>
 
-            {/* Pitch indicator (half-circle with wings) */}
+            {/* Pitch indicator (top half-circle) */}
             <g transform={`translate(${radius},${radius}) rotate(${roll})`}>
-                <path d={`M -15,0 A 15,15 0 0,1 15,0`} fill="transparent" stroke="yellow" strokeWidth={2} />
-                <line x1={-15} y1={0} x2={-25} y2={0} stroke="yellow" strokeWidth={2} />
-                <line x1={15} y1={0} x2={25} y2={0} stroke="yellow" strokeWidth={2} />
+                {/* Top half-circle */}
+                <path d={`M -15,0 A 15,15 0 0,0 15,0`} fill="transparent" stroke="yellow" strokeWidth={2} />
+                {/* Wings longer (only change) */}
+                <line x1={-15} y1={0} x2={-40} y2={0} stroke="yellow" strokeWidth={2} />
+                <line x1={15} y1={0} x2={40} y2={0} stroke="yellow" strokeWidth={2} />
             </g>
         </svg>
     );
