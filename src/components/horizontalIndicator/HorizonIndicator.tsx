@@ -31,7 +31,12 @@ export const HorizonIndicator: React.FC<HorizonIndicatorProps> = ({ pitch, roll,
     const clampedHorizonY = Math.min(Math.max(horizonY, 0), size);
 
     return (
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <svg
+            width={size}
+            height={size}
+            viewBox={`0 0 ${size} ${size}`}
+            style={{ userSelect: "none", WebkitUserSelect: "none", MozUserSelect: "none", msUserSelect: "none" }}
+        >
             <defs>
                 <clipPath id="horizonClip">
                     <circle cx={radius} cy={radius} r={radius} />
