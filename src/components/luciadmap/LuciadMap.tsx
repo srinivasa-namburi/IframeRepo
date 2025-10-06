@@ -86,12 +86,10 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
 
     const { yaw, pitch, roll } = useDeviceOrientationContext();
 
-    const [msg, setMsg] = useState("--waiting--");
 
     useEffect(()=>{
         if (joystickSupport.current) {
             joystickSupport.current.setOrientation({yaw, pitch, roll});  // your existing moveLeft/moveRight
-            setMsg(`Rotation: yaw=${yaw.toFixed(2)} pitch=${pitch.toFixed(2)} roll=${roll.toFixed(2)}`)
         }
     }, [yaw, pitch, roll])
 
@@ -258,7 +256,6 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
             >
                 <CubeAxesIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} yaw={cameraAngles.yaw} opacity={1} size={70}/>
             </div>
-            <div style={{position: "fixed", top:80, left: 20, backgroundColor: "gray"}}>{msg}</div>
         </div>
     )
 }
