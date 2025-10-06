@@ -15,7 +15,7 @@ export class SceneNavigationControllerJoystick extends SceneNavigationController
 
     constructor(gizmos: Gizmos, bounds: Bounds, options: SceneNavigationControllerOptions) {
         super(gizmos, bounds, options);
-        this.joystickPanSupport = new JoystickPanSupport(bounds);
+        this.joystickPanSupport = new JoystickPanSupport(bounds, {navigationMode: options.navigationMode});
     }
 
     onActivate(map: WebGLMap) {
