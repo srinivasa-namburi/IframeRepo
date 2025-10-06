@@ -27,7 +27,7 @@ import {NavigationType} from "ria-toolbox/libs/scene-navigation/GestureUtil";
 import {DefaultController} from "@luciad/ria/view/controller/DefaultController.js";
 import {ShapeType} from "@luciad/ria/shape/ShapeType.js";
 import type {Point} from "@luciad/ria/shape/Point.js";
-import {PointStyleSelectMode} from "../select/PointStyleSelectMode.tsx";
+import {ButtonSelectOptions, type SelectControlOptions} from "../select/ButtonSelectOptions.tsx";
 import {NavigationHelpPanel} from "../help/NavigationHelpPanel.tsx";
 import {MobileJoystickControls} from "../joystick/MobileJoystickControls.tsx";
 import {SceneNavigationControllerJoystick} from "../joystick/SceneNavigationControllerJoystick.ts";
@@ -42,6 +42,21 @@ import {useDeviceOrientationContext} from "ipad-device-orientation";
 
 const defaultProjection = "LUCIAD:XYZ";
 
+
+const ModeSelectControlOptions: SelectControlOptions[] = [
+    {value:"rgb", label:"RGB"},
+    {value:"vertical", label:"Height"},
+    {value:"intensity", label:"Intensity"},
+];
+
+const LayersMode: SelectControlOptions[] = [
+    {value:"both", label:"Both"},
+    {value:"cubes", label:"Cubes"},
+    {value:"point-clouds", label:"Points"},
+]
+
+type LayerModeName =  "cubes" | "point-clouds" | "both";
+const INITIAL_LAYER_MODE:LayerModeName = "both";
 
 // Get reference from URL query params or default to EPSG:4978
 const params = new URLSearchParams(window.location.search);
@@ -64,6 +79,8 @@ const AvailableBackgroundColors: BackgroundColor[] = [
     {value: "#000000", label: "Sky", id: "$sky"},
 ];
 
+
+
 // const LOCAL_STORAGE_BG_KEY = "point-cloud-viewer-background";
 
 interface Props {
@@ -78,11 +95,15 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
 
     const [cameraAngles, setCameraAngles] = useState({yaw:0, pitch:0, roll:0} as CameraAngles);
     const [styleMode, setStyleMode] =  useState(INITIAL_POINTCLOUD_STYLE_MODE as StyleModeName);
+
+    const [layersMode, setLayersMode] =  useState(INITIAL_LAYER_MODE as LayerModeName);
+
     const [pcParameters, setpcParameters] = useState(undefined as PointCloudStyleParameters | undefined | null)
 
     const divRef = useRef<HTMLDivElement | null>(null);
     const mapRef = useRef<WebGLMap | null>(null);
-    const activeLayer = useRef<TileSet3DLayer | null>(null);
+    const [activeHSPCLayer, setActiveHSPCLayer] = useState<TileSet3DLayer | null>(null);
+    const [active3DTilesLayer , setActive3DTilesLayer] = useState<TileSet3DLayer | null>(null);
 
     const { yaw, pitch, roll } = useDeviceOrientationContext();
 
@@ -121,7 +142,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                         mapRef.current?.layerTree.addChild(layer);
                         // Zoom to the point cloud location
                         mapRef.current?.mapNavigator.fit({bounds: layer.bounds, animate: false});
-                        activeLayer.current = layer;
+                        setActiveHSPCLayer(layer);
                         if (labelsUrl) loadLabels(labelsUrl, requestInit).then(labelsLayer => {
                             mapRef.current?.layerTree.addChild(labelsLayer);
                             labelsLayer.onClick = onClickZoom;
@@ -141,14 +162,15 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                     if (typeof props.onShowTime === "function") props.onShowTime(false);
                     console.log(`Data unreachable`)
                 });
-            } else if (ogc3dTilesUrl) {
+            }
+            if (ogc3dTilesUrl) {
                 loadOGC3dTiles(ogc3dTilesUrl, requestInit).then(layer => {
                     try {
                         //Add the model to the map
                         mapRef.current?.layerTree.addChild(layer);
                         // Zoom to the point cloud location
                         mapRef.current?.mapNavigator.fit({bounds: layer.bounds, animate: false});
-                        activeLayer.current = layer;
+                        setActive3DTilesLayer(layer);
                         if (labelsUrl) loadLabels(labelsUrl, requestInit).then(labelsLayer => {
                             labelsLayer.onClick = onClickZoom;
                             mapRef.current?.layerTree.addChild(labelsLayer);
@@ -205,28 +227,59 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
 
 
     const setStyleModeAction = (mode: StyleModeName)=> {
-        if (activeLayer.current) {
+        if (activeHSPCLayer) {
             setStyleMode(mode);
-            setPointStyleMode(activeLayer.current, mode);
-            const pcParameters = getPointCloudStyleParameters(activeLayer.current);
+            setPointStyleMode(activeHSPCLayer, mode);
+            const pcParameters = getPointCloudStyleParameters(activeHSPCLayer);
+            setpcParameters(pcParameters);
+        }
+        if (active3DTilesLayer) {
+            setStyleMode(mode);
+            setPointStyleMode(active3DTilesLayer, mode);
+            const pcParameters = getPointCloudStyleParameters(active3DTilesLayer);
             setpcParameters(pcParameters);
         }
     }
+
+    const setLayersModeAction = (mode: LayerModeName)=> {
+        setLayersMode(mode);
+
+        switch (mode) {
+            case "both":
+                if (activeHSPCLayer) activeHSPCLayer.visible = true;
+                if (active3DTilesLayer) active3DTilesLayer.visible = true;
+                break;
+            case "cubes":
+                if (activeHSPCLayer) activeHSPCLayer.visible = false;
+                if (active3DTilesLayer) active3DTilesLayer.visible = true;
+                break;
+            case "point-clouds":
+                if (activeHSPCLayer) activeHSPCLayer.visible = true;
+                if (active3DTilesLayer) active3DTilesLayer.visible = false;
+                break;
+        }
+    }
+
+
 
     return (
         <div className="LuciadMap">
             <div className="LuciadMapElement" ref={divRef} style={{backgroundColor: bgColor.value}} tabIndex={0} />
             <div style={{ position: "fixed", top: 16, left: 16, zIndex: 1000 }}>
                 {/*<ColorPicker colors={AvailableBackgroundColors} currentColor={bgColor} onChange={handleColorChange} />*/}
-                <PointStyleSelectMode onChange={(mode)=>setStyleModeAction(mode)} mode={styleMode}/>
+                <ButtonSelectOptions onChange={(mode)=> setStyleModeAction(mode as unknown as StyleModeName)} mode={styleMode} options={ModeSelectControlOptions}/>
                 <NavigationHelpPanel />
+                {
+                    (activeHSPCLayer && active3DTilesLayer) &&
+                    <ButtonSelectOptions onChange={(mode)=> setLayersModeAction(mode as unknown as LayerModeName)} mode={layersMode} options={LayersMode}/>
+                }
 
             </div>
             {pcParameters && <div style={{position: "fixed", top:70, left: 20, height: 320}}>
                 <VerticalGradient gradient={pcParameters.gradient} min={pcParameters.min.value} max={pcParameters.max.value}/>
             </div>
             }
-            <ViewToolIBar mapRef={mapRef} layerRef={activeLayer}/>
+            <ViewToolIBar mapRef={mapRef} layerState={activeHSPCLayer ? activeHSPCLayer : active3DTilesLayer}/>
             <MobileJoystickControls
                 onLeftJoystickMove={(dx, dy) => {
                     if (joystickSupport.current) {

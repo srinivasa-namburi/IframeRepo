@@ -17,7 +17,7 @@ import {
 import type {MeshStyle} from "@luciad/ria/view/style/MeshStyle.js";
 
 export type StyleModeName =  "rgb" | "intensity" | "vertical";
-export const INITIAL_POINTCLOUD_STYLE_MODE = "rgb";
+export const INITIAL_POINTCLOUD_STYLE_MODE = "vertical";
 
 const QUALITY_FACTOR_MESH = 2;
 const QUALITY_FACTOR = 0.6;

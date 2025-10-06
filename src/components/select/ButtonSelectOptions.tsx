@@ -3,12 +3,19 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import type {StyleModeName} from "../luciadmap/utils/HSPCLoader.ts";
 
-interface PointStyleSelectModeProps {
-    onChange: (mode: StyleModeName) => void;
-    mode: StyleModeName;
+export interface SelectControlOptions {
+    value: string;
+    label: string;
+    title?: string;
 }
 
-export const PointStyleSelectMode: React.FC<PointStyleSelectModeProps> = ({ onChange, mode }) => {
+interface ButtonSelectOptionsProps {
+    onChange: (mode: string) => void;
+    mode: string;
+    options: SelectControlOptions[];
+}
+
+export const ButtonSelectOptions: React.FC<ButtonSelectOptionsProps> = ({ onChange, mode, options }) => {
 
     const handleChange = (event: any) => {
         const selectedMode = event.target.value as StyleModeName;
@@ -30,9 +37,7 @@ export const PointStyleSelectMode: React.FC<PointStyleSelectModeProps> = ({ onCh
                 zIndex: 1000,
             }}
         >
-            <MenuItem value="rgb">RGB</MenuItem>
-            <MenuItem value="vertical">Height</MenuItem>
-            <MenuItem value="intensity">Intensity</MenuItem>
+            {options.map(option=> <MenuItem value={option.value} title={option.title} key={option.value}>{option.label}</MenuItem>)}
         </Select>
     );
 };

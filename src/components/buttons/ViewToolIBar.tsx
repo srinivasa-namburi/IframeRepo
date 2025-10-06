@@ -16,18 +16,18 @@ import { carPerspective, helicopterPerspective, turn } from "./utills/Navigation
 
 interface Props {
     mapRef: React.RefObject<WebGLMap | null>;
-    layerRef: React.RefObject<TileSet3DLayer | null>;
+    layerState: TileSet3DLayer | null;
 }
 
-export const ViewToolIBar: React.FC<Props> = ({ mapRef, layerRef }) => {
+export const ViewToolIBar: React.FC<Props> = ({ mapRef, layerState }) => {
     const actions = [
         {
             icon: <CenterFocusStrongIcon />,
             name: "Center",
             onClick: () => {
-                if (mapRef.current && layerRef.current) {
+                if (mapRef.current && layerState) {
                     mapRef.current.mapNavigator.fit({
-                        bounds: layerRef.current.bounds,
+                        bounds: layerState.bounds,
                         animate: { duration: 500 },
                     });
                 }
