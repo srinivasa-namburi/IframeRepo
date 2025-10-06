@@ -37,6 +37,15 @@ const COLOR_SPAN_HEIGHT = [
     "rgba( 255 , 0 , 0, 0.9)"
     ]
 
+const alpha = 1;
+const MESH_COLOR_SPAN_HEIGHT = [
+    `rgba( 0 , 0 , 255, ${alpha})`,
+    `rgba( 0 , 255 , 255, ${alpha})`,
+    `rgba( 0 , 255 , 0, ${alpha})`,
+    `rgba( 255 , 255 , 0, ${alpha})`,
+    `rgba( 255 , 0 , 0, ${alpha})`
+]
+
 const COLOR_SPAN_INTENSITY = [
     "#808080", // medium gray
     "#999999", // lighter
@@ -46,14 +55,11 @@ const COLOR_SPAN_INTENSITY = [
 ];
 
 
-const colorMix = COLOR_SPAN_INTENSITY.map(c => {
-    return color(c);
-});
+const colorMix = COLOR_SPAN_INTENSITY.map(c =>  color(c));
 
-const colorMixHeight = COLOR_SPAN_HEIGHT.map(c => {
-    return color(c);
-});
+const colorMixHeight = COLOR_SPAN_HEIGHT.map(c => color(c));
 
+const meshColorMixHeight = MESH_COLOR_SPAN_HEIGHT.map(c =>  color(c));
 
 interface LoadingOptions {
     requestHeaders?: HttpRequestHeaders;
@@ -99,6 +105,7 @@ export function loadOGC3dTiles(url: string, o: RequestInit | null) {
                 qualityFactor: QUALITY_FACTOR_MESH,
                 loadingStrategy: TileLoadingStrategy.DETAIL_FIRST,
                 performanceHints: {maxPointCount: MAX_FOR_MOBILE},
+                transparency: true
             });
             // Set the style
             setPointStyleMode(layer, INITIAL_POINTCLOUD_STYLE_MODE);
@@ -113,6 +120,7 @@ export function setPointStyleMode(layer: TileSet3DLayer, mode: StyleModeName) {
     const style = createPointStyle({mode, layer});
     // Set the style
     layer.pointCloudStyle["colorExpression"] = undefined;
+    layer.meshStyle["colorExpression"] = undefined;
     layer.pointCloudStyle = style.pointCloudStyle;
     if (style.meshStyle) layer.meshStyle = style.meshStyle;
     (layer as any).pointCloudStyleParameters = style.parameters;
@@ -168,7 +176,7 @@ function createPointStyle(options: {mode: StyleModeName, layer: TileSet3DLayer})
         pointSize:{
             mode: ScalingMode.ADAPTIVE_WORLD_SIZE,
             minimumPixelSize: 2,
-            worldScale: 1
+            worldScale: 0.5
         }
     }
     if (mode==="vertical") {
@@ -183,7 +191,7 @@ function createPointStyle(options: {mode: StyleModeName, layer: TileSet3DLayer})
                 colorExpression: mixmap(heightFraction, colorMixHeight)
             },
             meshStyle: {
-                colorExpression: mixmap(heightFraction, colorMixHeight)
+                colorExpression: mixmap(heightFraction, meshColorMixHeight)
             }
         }
     } else
