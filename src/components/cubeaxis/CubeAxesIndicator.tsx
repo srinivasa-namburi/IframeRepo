@@ -43,6 +43,7 @@ export const CubeAxesIndicator: React.FC<CubeAxesIndicatorProps> = ({
     const originShift = 1.1 * half;
 
     const cubeStyle: React.CSSProperties = {
+        pointerEvents: "none",
         width: `${size}px`,
         height: `${size}px`,
         transform: `rotateZ(${roll}deg) rotateX(${pitch}deg) rotateY(${yaw}deg)`,
@@ -54,7 +55,7 @@ export const CubeAxesIndicator: React.FC<CubeAxesIndicatorProps> = ({
     const originTranslate = `translate3d(${-originShift}px, ${originShift}px, ${originShift}px)`;
 
     return (
-        <div className="cube-container" style={{ width: size, height: size }}>
+        <div className="cube-container" style={{ width: size, height: size, display: "inline" }}>
             <div className="cube" style={cubeStyle}>
                 {/* Cube faces */}
                 <div className="face front">Front</div>

@@ -39,6 +39,9 @@ import {type CameraAngles, CameraChangeDetectionManager} from "./utils/CameraCha
 import {CubeAxesIndicator} from "../cubeaxis/CubeAxesIndicator.tsx";
 import {VerticalGradient} from "../gradient/VerticalGradient.tsx";
 import {useDeviceOrientationContext} from "ipad-device-orientation";
+import {getTilesetQualityFromUrl} from "./utils/meshurlparsr/MeshUrlParser.ts";
+import {VolumeBanner} from "../volumebanner/VolumeBanner.tsx";
+import {calculateRecommendedBounds, setCameraOnPreferredSpot} from "./utils/camera/CameraUtils.ts";
 
 const defaultProjection = "LUCIAD:XYZ";
 
@@ -92,6 +95,8 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     const storedColor = "$sky";
     const [bgColor, /*setBgColor*/] = React.useState<BackgroundColor>(ColorPickerFindColor(AvailableBackgroundColors, storedColor));
     const joystickSupport = useRef(null as JoystickPanSupport | null | undefined);
+
+    const [cubesNumber, setCubesNumber] = useState(null as number | null)
 
     const [cameraAngles, setCameraAngles] = useState({yaw:0, pitch:0, roll:0} as CameraAngles);
     const [styleMode, setStyleMode] =  useState(INITIAL_POINTCLOUD_STYLE_MODE as StyleModeName);
@@ -166,6 +171,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
             if (ogc3dTilesUrl) {
                 loadOGC3dTiles(ogc3dTilesUrl, requestInit).then(layer => {
                     try {
+                        setCubesNumber(getTilesetQualityFromUrl(ogc3dTilesUrl));
                         //Add the model to the map
                         mapRef.current?.layerTree.addChild(layer);
                         // Zoom to the point cloud location
@@ -174,7 +180,9 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                         if (labelsUrl) loadLabels(labelsUrl, requestInit).then(labelsLayer => {
                             labelsLayer.onClick = onClickZoom;
                             mapRef.current?.layerTree.addChild(labelsLayer);
-                        })
+                        });
+                        const pcParameters = getPointCloudStyleParameters(layer);
+                        setpcParameters(pcParameters);
                         joystickSupport.current = restrictBounds3D(mapRef.current, layer);
                         if (typeof props.onShowTime === "function") props.onShowTime(true);
                     } // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -268,7 +276,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
             <div style={{ position: "fixed", top: 16, left: 16, zIndex: 1000 }}>
                 {/*<ColorPicker colors={AvailableBackgroundColors} currentColor={bgColor} onChange={handleColorChange} />*/}
                 <ButtonSelectOptions onChange={(mode)=> setStyleModeAction(mode as unknown as StyleModeName)} mode={styleMode} options={ModeSelectControlOptions}/>
-                <NavigationHelpPanel />
+                <VolumeBanner volume={cubesNumber} />
                 {
                     (activeHSPCLayer && active3DTilesLayer) &&
                     <ButtonSelectOptions onChange={(mode)=> setLayersModeAction(mode as unknown as LayerModeName)} mode={layersMode} options={LayersMode}/>
@@ -301,12 +309,14 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
             <div
                 style={{
                     position: "fixed",
-                    top: 100,
-                    right: 20,
+                    top: 10,
+                    right: 100,
                     userSelect: "none", // optional: prevent text selection
-                    pointerEvents: "none"
+                    display: "flex",          // ✅ children side by side
+                    gap: "10px",
                 }}
             >
+                <NavigationHelpPanel />
                 <CubeAxesIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} yaw={cameraAngles.yaw} opacity={1} size={70}/>
             </div>
         </div>
@@ -318,38 +328,11 @@ function restrictBounds3D(map: WebGLMap | null, layer: TileSet3DLayer) {
     if (!map) return;
     if (!layer.bounds) return;
 
-    let limitBounds = layer.bounds.copy();
-    let targetBounds = layer.bounds.copy();
-    const scale = 5;
-    const targetScale = 0.025;
-    if (limitBounds.depth === 0) {
-        limitBounds = createBounds(limitBounds.reference, [
-            limitBounds.x - (scale - 1) * limitBounds.width / 2, limitBounds.width * scale,
-            limitBounds.y - (scale - 1) * limitBounds.height / 2, limitBounds.height * scale,
-            -10000, 20000
-        ])
-        targetBounds = createBounds(targetBounds.reference, [
-            targetBounds.x - (targetScale - 1) * targetBounds.width / 2, targetBounds.width * targetScale,
-            targetBounds.y - (targetScale - 1) * targetBounds.height / 2, targetBounds.height * targetScale,
-            -10000, 20000
-        ]);
-    } else {
-        limitBounds = createBounds(limitBounds.reference, [
-            limitBounds.x - (scale - 1) * limitBounds.width / 2, limitBounds.width * scale,
-            limitBounds.y - (scale - 1) * limitBounds.height / 2, limitBounds.height * scale,
-            limitBounds.z - ((scale*2) - 1) * limitBounds.depth / 2, limitBounds.depth * scale *2
-        ]);
-        targetBounds = createBounds(targetBounds.reference, [
-            targetBounds.x - (targetScale - 1) * targetBounds.width / 2, targetBounds.width * targetScale,
-            targetBounds.y - (targetScale - 1) * targetBounds.height / 2, targetBounds.height * targetScale,
-            // targetBounds.z - ((targetScale*2) - 1) * targetBounds.depth / 2, targetBounds.depth * targetScale *2
-            targetBounds.z + targetBounds.depth / 3 - (targetBounds.depth * targetScale * 2) / 2,
-            targetBounds.depth * targetScale * 2
-        ]);
-    }
 
+    const {limitBounds} = calculateRecommendedBounds(layer);
 
-    map.mapNavigator.fit({bounds: targetBounds, animate: false});
+    setCameraOnPreferredSpot({map, layer, face:"front"});
+
 
     // Declare the gizmos to use for the different navigation types.
     const gizmos = {

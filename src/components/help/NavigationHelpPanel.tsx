@@ -96,7 +96,8 @@ export const NavigationHelpPanel: React.FC = () => {
             <IconButton
                 color="primary"
                 onClick={toggleDrawer(true)}
-                sx={{ position: "fixed", top: 18, right: 90, zIndex: 2000 }}
+                // sx={{ position: "fixed", top: 18, right: 90, zIndex: 2000 }}
+                sx={{ display:"inline"}}
             >
                 <HelpOutlineIcon  sx={{ fontSize: 36 }} />
             </IconButton>
