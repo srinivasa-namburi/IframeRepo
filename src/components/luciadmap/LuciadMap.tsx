@@ -16,7 +16,6 @@ import {
 } from "./utils/HSPCLoader.ts";
 import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
 import {loadLabels} from "./utils/LabelLoader.ts";
-import {ViewToolIBar} from "../buttons/ViewToolIBar.tsx";
 import {type BackgroundColor, ColorPickerFindColor} from "../colorpicker/ColorPicker.tsx";
 import ROTATION_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_circles.glb";
 import PAN_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_arrows.glb";
@@ -28,15 +27,11 @@ import {DefaultController} from "@luciad/ria/view/controller/DefaultController.j
 import {ShapeType} from "@luciad/ria/shape/ShapeType.js";
 import type {Point} from "@luciad/ria/shape/Point.js";
 import {ButtonSelectOptions, type SelectControlOptions} from "../select/ButtonSelectOptions.tsx";
-import {NavigationHelpPanel} from "../help/NavigationHelpPanel.tsx";
-import {MobileJoystickControls} from "../joystick/MobileJoystickControls.tsx";
 import {SceneNavigationControllerJoystick} from "../joystick/SceneNavigationControllerJoystick.ts";
 import type {JoystickPanSupport} from "../joystick/JoystickPanSupport.ts";
 import {createAxes, createSky} from "./utils/createSettings.ts";
 import {createEffects} from "./utils/createSettings.ts";
 import {CameraNearPlaneManager} from "./utils/CameraNearPlaneManager.ts";
-import {type CameraAngles, CameraChangeDetectionManager} from "./utils/CameraChangeDetectionManager.ts";
-import {CubeAxesIndicator} from "../cubeaxis/CubeAxesIndicator.tsx";
 import {VerticalGradient} from "../gradient/VerticalGradient.tsx";
 import {useDeviceOrientationContext} from "ipad-device-orientation";
 import {getTilesetQualityFromUrl} from "./utils/meshurlparsr/MeshUrlParser.ts";
@@ -98,7 +93,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
 
     const [cubesNumber, setCubesNumber] = useState(null as number | null)
 
-    const [cameraAngles, setCameraAngles] = useState({yaw:0, pitch:0, roll:0} as CameraAngles);
+   // const [setCameraAngles] = useState({yaw:0, pitch:0, roll:0} as CameraAngles);
     const [styleMode, setStyleMode] =  useState(INITIAL_POINTCLOUD_STYLE_MODE as StyleModeName);
 
     const [layersMode, setLayersMode] =  useState(INITIAL_LAYER_MODE as LayerModeName);
@@ -220,12 +215,12 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
 
         const manager = new CameraNearPlaneManager();
         manager.setCameraNearPlane(map);
-        const cameraAngleDetector = new CameraChangeDetectionManager();
+    //    const cameraAngleDetector = new CameraChangeDetectionManager();
 
 // Attach the listener to your map
-        cameraAngleDetector.setCameraUpdatedListener(map, (newCameraAngles: CameraAngles) => {
-            setCameraAngles(newCameraAngles);
-        });
+//         cameraAngleDetector.setCameraUpdatedListener(map, (newCameraAngles: CameraAngles) => {
+//             setCameraAngles(newCameraAngles);
+//         });
 
         map.onClick = ()=> {
             map.domNode.focus();
@@ -275,49 +270,51 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
             <div className="LuciadMapElement" ref={divRef} style={{backgroundColor: bgColor.value}} tabIndex={0} />
             <div style={{ position: "fixed", top: 16, left: 16, zIndex: 1000 }}>
                 {/*<ColorPicker colors={AvailableBackgroundColors} currentColor={bgColor} onChange={handleColorChange} />*/}
-                <ButtonSelectOptions onChange={(mode)=> setStyleModeAction(mode as unknown as StyleModeName)} mode={styleMode} options={ModeSelectControlOptions}/>
                 <VolumeBanner volume={cubesNumber} />
                 {
                     (activeHSPCLayer && active3DTilesLayer) &&
                     <ButtonSelectOptions onChange={(mode)=> setLayersModeAction(mode as unknown as LayerModeName)} mode={layersMode} options={LayersMode}/>
                 }
-
             </div>
-            {pcParameters && <div style={{position: "fixed", top:70, left: 20, height: 320}}>
+            <div style={{ position: "fixed", top: 16, right: 16, zIndex: 1000 }}>
+                <ButtonSelectOptions onChange={(mode)=> setStyleModeAction(mode as unknown as StyleModeName)} mode={styleMode} options={ModeSelectControlOptions}/>
+            </div>
+            {pcParameters && <div style={{position: "fixed", top:70, right: 20, height: 320}}>
+
                 <VerticalGradient gradient={pcParameters.gradient} min={pcParameters.min.value} max={pcParameters.max.value}/>
             </div>
             }
-            <ViewToolIBar mapRef={mapRef} layerState={activeHSPCLayer ? activeHSPCLayer : active3DTilesLayer}/>
-            <MobileJoystickControls
-                onLeftJoystickMove={(dx, dy) => {
-                    if (joystickSupport.current) {
-                        // dx: left/right, dy: forward/back
-                        joystickSupport.current.moveHorizontally(dx);  // your existing moveLeft/moveRight
-                        joystickSupport.current.moveVertically(dy);    // your existing moveForward/moveBackward
-                    }
-                }}
-                onRightJoystickMove={(dx, dy) => {
-                    if (joystickSupport.current) {
-                        // dx: left/right, dy: forward/back
-                        joystickSupport.current.rotateYaw(dx);  // your existing moveLeft/moveRight
-                        joystickSupport.current.rotatePitch(dy);    // your existing moveForward/moveBackward
-                    }
-                }}
-                onUp={(active) => joystickSupport.current?.setMoveUp(active)}
-                onDown={(active) => joystickSupport.current?.setMoveDown(active)}
-            />
+            {/*<ViewToolIBar mapRef={mapRef} layerState={activeHSPCLayer ? activeHSPCLayer : active3DTilesLayer}/>*/}
+            {/*<MobileJoystickControls*/}
+            {/*    onLeftJoystickMove={(dx, dy) => {*/}
+            {/*        if (joystickSupport.current) {*/}
+            {/*            // dx: left/right, dy: forward/back*/}
+            {/*            joystickSupport.current.moveHorizontally(dx);  // your existing moveLeft/moveRight*/}
+            {/*            joystickSupport.current.moveVertically(dy);    // your existing moveForward/moveBackward*/}
+            {/*        }*/}
+            {/*    }}*/}
+            {/*    onRightJoystickMove={(dx, dy) => {*/}
+            {/*        if (joystickSupport.current) {*/}
+            {/*            // dx: left/right, dy: forward/back*/}
+            {/*            joystickSupport.current.rotateYaw(dx);  // your existing moveLeft/moveRight*/}
+            {/*            joystickSupport.current.rotatePitch(dy);    // your existing moveForward/moveBackward*/}
+            {/*        }*/}
+            {/*    }}*/}
+            {/*    onUp={(active) => joystickSupport.current?.setMoveUp(active)}*/}
+            {/*    onDown={(active) => joystickSupport.current?.setMoveDown(active)}*/}
+            {/*/>*/}
             <div
                 style={{
                     position: "fixed",
                     top: 10,
-                    right: 100,
+                    right: 10,
                     userSelect: "none", // optional: prevent text selection
                     display: "flex",          // ✅ children side by side
                     gap: "10px",
                 }}
             >
-                <NavigationHelpPanel />
-                <CubeAxesIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} yaw={cameraAngles.yaw} opacity={1} size={70}/>
+                {/*<NavigationHelpPanel />*/}
+                {/*<CubeAxesIndicator pitch={cameraAngles.pitch} roll={cameraAngles.roll} yaw={cameraAngles.yaw} opacity={1} size={70}/>*/}
             </div>
         </div>
     )
