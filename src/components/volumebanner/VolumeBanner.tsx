@@ -24,6 +24,7 @@ export const VolumeBanner: React.FC<VolumeBannerProps> = ({ volume }) => {
             }}
             title={`${formattedVolume} cubic meters (informational only)`}
         >
+            Biovolume<br/>
             {formattedVolume} m³
         </div>
     );

@@ -56,8 +56,8 @@ interface CameraPreferredSpotOptions {
 export function setCameraOnPreferredSpot({
                                              map,
                                              layer,
-                                             percent = 110,
-                                             pitch = -70,
+                                             percent = 300,
+                                             pitch = 0,
                                              face = "front",
                                              duration = 0,
                                          }: CameraPreferredSpotOptions) {
@@ -79,7 +79,7 @@ export function setCameraOnPreferredSpot({
 
     let x1 = bounds.x;
     let y1 = bounds.y;
-    const z1 = bounds.z + bounds.depth * 2 ;
+    const z1 = bounds.z + bounds.depth * 0.5 ;
     let x2 = bounds.x + bounds.width;
     let y2 = bounds.y;
     let yaw = 0;

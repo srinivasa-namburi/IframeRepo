@@ -9,20 +9,16 @@ import {Feature} from "@luciad/ria/model/feature/Feature.js";
 import {
     getPointCloudStyleParameters,
     getRequestInitValues,
-    INITIAL_POINTCLOUD_STYLE_MODE,
     loadHSPC,
-    loadOGC3dTiles, type PointCloudStyleParameters, setPointStyleMode,
-    type StyleModeName
+    loadOGC3dTiles, type PointCloudStyleParameters,
 } from "./utils/HSPCLoader.ts";
 import {TileSet3DLayer} from "@luciad/ria/view/tileset/TileSet3DLayer.js";
 import {loadLabels} from "./utils/LabelLoader.ts";
 import {type BackgroundColor, ColorPickerFindColor} from "../colorpicker/ColorPicker.tsx";
-import ROTATION_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_circles.glb";
-import PAN_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_arrows.glb";
-import SCROLL_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_octhedron.glb";
+// import ROTATION_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_circles.glb";
+// import PAN_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_arrows.glb";
+// import SCROLL_GLB from "ria-toolbox/libs/scene-navigation/gizmo/gizmo_octhedron.glb";
 import {NavigationKeysMode} from "ria-toolbox/libs/scene-navigation/KeyNavigationSupport";
-import {NavigationGizmo} from "ria-toolbox/libs/scene-navigation/NavigationGizmo";
-import {NavigationType} from "ria-toolbox/libs/scene-navigation/GestureUtil";
 import {DefaultController} from "@luciad/ria/view/controller/DefaultController.js";
 import {ShapeType} from "@luciad/ria/shape/ShapeType.js";
 import type {Point} from "@luciad/ria/shape/Point.js";
@@ -41,11 +37,11 @@ import {calculateRecommendedBounds, setCameraOnPreferredSpot} from "./utils/came
 const defaultProjection = "LUCIAD:XYZ";
 
 
-const ModeSelectControlOptions: SelectControlOptions[] = [
-    {value:"rgb", label:"RGB"},
-    {value:"vertical", label:"Height"},
-    {value:"intensity", label:"Intensity"},
-];
+// const ModeSelectControlOptions: SelectControlOptions[] = [
+//     {value:"rgb", label:"RGB"},
+//     {value:"vertical", label:"Height"},
+//     {value:"intensity", label:"Intensity"},
+// ];
 
 const LayersMode: SelectControlOptions[] = [
     {value:"both", label:"Both"},
@@ -94,7 +90,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     const [cubesNumber, setCubesNumber] = useState(null as number | null)
 
    // const [setCameraAngles] = useState({yaw:0, pitch:0, roll:0} as CameraAngles);
-    const [styleMode, setStyleMode] =  useState(INITIAL_POINTCLOUD_STYLE_MODE as StyleModeName);
+    // const [styleMode, setStyleMode] =  useState(INITIAL_POINTCLOUD_STYLE_MODE as StyleModeName);
 
     const [layersMode, setLayersMode] =  useState(INITIAL_LAYER_MODE as LayerModeName);
 
@@ -229,20 +225,20 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     }
 
 
-    const setStyleModeAction = (mode: StyleModeName)=> {
-        if (activeHSPCLayer) {
-            setStyleMode(mode);
-            setPointStyleMode(activeHSPCLayer, mode);
-            const pcParameters = getPointCloudStyleParameters(activeHSPCLayer);
-            setpcParameters(pcParameters);
-        }
-        if (active3DTilesLayer) {
-            setStyleMode(mode);
-            setPointStyleMode(active3DTilesLayer, mode);
-            const pcParameters = getPointCloudStyleParameters(active3DTilesLayer);
-            setpcParameters(pcParameters);
-        }
-    }
+    // const setStyleModeAction = (mode: StyleModeName)=> {
+    //     if (activeHSPCLayer) {
+    //         setStyleMode(mode);
+    //         setPointStyleMode(activeHSPCLayer, mode);
+    //         const pcParameters = getPointCloudStyleParameters(activeHSPCLayer);
+    //         setpcParameters(pcParameters);
+    //     }
+    //     if (active3DTilesLayer) {
+    //         setStyleMode(mode);
+    //         setPointStyleMode(active3DTilesLayer, mode);
+    //         const pcParameters = getPointCloudStyleParameters(active3DTilesLayer);
+    //         setpcParameters(pcParameters);
+    //     }
+    // }
 
     const setLayersModeAction = (mode: LayerModeName)=> {
         setLayersMode(mode);
@@ -276,9 +272,9 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
                     <ButtonSelectOptions onChange={(mode)=> setLayersModeAction(mode as unknown as LayerModeName)} mode={layersMode} options={LayersMode}/>
                 }
             </div>
-            <div style={{ position: "fixed", top: 16, right: 16, zIndex: 1000 }}>
-                <ButtonSelectOptions onChange={(mode)=> setStyleModeAction(mode as unknown as StyleModeName)} mode={styleMode} options={ModeSelectControlOptions}/>
-            </div>
+            {/*<div style={{ position: "fixed", top: 16, right: 16, zIndex: 1000 }}>*/}
+            {/*    <ButtonSelectOptions onChange={(mode)=> setStyleModeAction(mode as unknown as StyleModeName)} mode={styleMode} options={ModeSelectControlOptions}/>*/}
+            {/*</div>*/}
             {pcParameters && <div style={{position: "fixed", top:70, right: 20, height: 320}}>
 
                 <VerticalGradient gradient={pcParameters.gradient} min={pcParameters.min.value} max={pcParameters.max.value}/>
@@ -332,20 +328,20 @@ function restrictBounds3D(map: WebGLMap | null, layer: TileSet3DLayer) {
 
 
     // Declare the gizmos to use for the different navigation types.
-    const gizmos = {
-        [NavigationType.ROTATION]: new NavigationGizmo(ROTATION_GLB),
-        [NavigationType.PAN]: new NavigationGizmo(PAN_GLB),
-        [NavigationType.ZOOM]: new NavigationGizmo(SCROLL_GLB, { sizeInPixels: 40 })
-    };
+    // const gizmos = {
+    //     [NavigationType.ROTATION]: new NavigationGizmo(ROTATION_GLB),
+    //     [NavigationType.PAN]: new NavigationGizmo(PAN_GLB),
+    //     [NavigationType.ZOOM]: new NavigationGizmo(SCROLL_GLB, { sizeInPixels: 40 })
+    // };
     // Create a controller with varying options.
-    const navigateController = new SceneNavigationControllerJoystick(gizmos, limitBounds, {
+    const navigateController = new SceneNavigationControllerJoystick({}, limitBounds, {
         navigationMode: NavigationKeysMode.TANGENT_FORWARD, // navigate along camera paths
         defaultSpeed: 1, // ~28km/h
         allowZoomOnClick: true, // clicking on a spot zooms in on to that location by a set fraction
         useZoomAnimations: false, // don't use smooth animations when zooming or out
         fasterMultiplier: 4, // go two times as fast when shift is pressed
         slowerMultiplier: 0.25, // go only half as fast when space is pressed
-        swapPanRotateButtons: true
+        swapPanRotateButtons: false
     });
 
     map.defaultController = new DefaultController({ navigateController });
