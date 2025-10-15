@@ -277,7 +277,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
             {/*</div>*/}
             {pcParameters && <div style={{position: "fixed", top:70, right: 20, height: 320}}>
 
-                <VerticalGradient gradient={pcParameters.gradient} min={pcParameters.min.value} max={pcParameters.max.value}/>
+                {/*<VerticalGradient gradient={pcParameters.gradient} min={pcParameters.min.value} max={pcParameters.max.value}/>*/}
             </div>
             }
             {/*<ViewToolIBar mapRef={mapRef} layerState={activeHSPCLayer ? activeHSPCLayer : active3DTilesLayer}/>*/}
