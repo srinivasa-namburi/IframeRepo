@@ -28,7 +28,6 @@ import type {JoystickPanSupport} from "../joystick/JoystickPanSupport.ts";
 import {createAxes, createSky} from "./utils/createSettings.ts";
 import {createEffects} from "./utils/createSettings.ts";
 import {CameraNearPlaneManager} from "./utils/CameraNearPlaneManager.ts";
-import {VerticalGradient} from "../gradient/VerticalGradient.tsx";
 import {useDeviceOrientationContext} from "ipad-device-orientation";
 import {getTilesetQualityFromUrl} from "./utils/meshurlparsr/MeshUrlParser.ts";
 import {VolumeBanner} from "../volumebanner/VolumeBanner.tsx";
