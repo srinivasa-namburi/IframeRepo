@@ -19,7 +19,7 @@ export const VolumeBanner: React.FC<VolumeBannerProps> = ({ volume }) => {
                 color: "white",
                 borderRadius: "4px",
                 display: "inline-block",
-                fontSize: "24px",
+                fontSize: "18px",
                 fontStyle: "italic", // subtle emphasis on info
             }}
             title={`${formattedVolume} cubic meters (informational only)`}
