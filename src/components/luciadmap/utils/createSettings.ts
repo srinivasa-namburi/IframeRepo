@@ -43,7 +43,7 @@ export const createEffects = (map: WebGLMap | null) => {
     map.effects.eyeDomeLighting = {
         window: 2,
         strength: 0.1,
-        color: "#dfdfdf"
+        color: "rgb(223,223,223)"
     }
 }
 
