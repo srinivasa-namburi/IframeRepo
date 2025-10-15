@@ -41,8 +41,9 @@ export const createAxes = (map: WebGLMap | null) => {
 export const createEffects = (map: WebGLMap | null) => {
     if (!map) return;
     map.effects.eyeDomeLighting = {
-        window: 1,
-        strength: 0.1
+        window: 2,
+        strength: 0.1,
+        color: "#dfdfdf"
     }
 }
 
