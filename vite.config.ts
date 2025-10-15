@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 // @ts-ignore
 import * as fs from "fs";
+import compression from 'vite-plugin-compression';
 
 const hexLoader = {
   name: 'hex-loader',
@@ -20,10 +21,18 @@ const hexLoader = {
 // https://vite.dev/config/
 export default defineConfig({
   assetsInclude: ["**/*.glb"], // tell Vite to treat .glb as assets
-  plugins: [hexLoader, react()],
+  plugins: [
+    hexLoader,
+    react(),
+    compression({
+      algorithm: 'gzip',
+      ext: '.gz',
+      filter: (file) => file.endsWith('.js'), // compress JS only
+    }),
+  ],
   server: {
     host: true,        // listen on all network interfaces
     port: 5173,        // optional: specify port
   },
-  base: "./", // <-- makes the app relative to the current path`
+  base: "./", // <-- makes the app relative to the current path`,
 })
