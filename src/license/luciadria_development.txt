@@ -1,0 +1,14 @@
+# 
+# Developer license.
+# 
+version                   = 2025.0.01
+productName               = LuciadRIA
+copyright                 = Powered by Luciad
+message                   = Powered by Luciad. All rights reserved.
+licensee                  = Testing purposes (Luciad internal use only)
+licenseType               = development
+optionalModules           = Geometry,MilitarySymbology,Panoramic
+expiryDate                = 2026/08/19
+serialNumber              = 95cb0400
+key                       = 72c5a3f499c8b2969ed85b7c2baaa583c0c3c5fcd7586abebfa22948063119488ee13b7455e75b8590e760685c6f0e7c53a2419db630de3e4c876fa2bd92d8bb
+#
