@@ -82,7 +82,7 @@ interface Props {
 
 export const LuciadMap: React.FC<Props> = (props: Props) => {
     // const storedColor = localStorage.getItem(LOCAL_STORAGE_BG_KEY);
-    const storedColor = "$sky";
+    const storedColor = "#1E1E1E";
     const [bgColor, /*setBgColor*/] = React.useState<BackgroundColor>(ColorPickerFindColor(AvailableBackgroundColors, storedColor));
     const joystickSupport = useRef(null as JoystickPanSupport | null | undefined);
 
@@ -263,7 +263,7 @@ export const LuciadMap: React.FC<Props> = (props: Props) => {
     return (
         <div className="LuciadMap">
             <div className="LuciadMapElement" ref={divRef} style={{backgroundColor: bgColor.value}} tabIndex={0} />
-            <div style={{ position: "fixed", top: 16, left: 16, zIndex: 1000 }}>
+            <div style={{ position: "fixed", top: 48, left: 16, zIndex: 1000 }}>
                 {/*<ColorPicker colors={AvailableBackgroundColors} currentColor={bgColor} onChange={handleColorChange} />*/}
                 <VolumeBanner volume={cubesNumber} />
                 {

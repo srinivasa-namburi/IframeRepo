@@ -29,21 +29,27 @@ export interface PointCloudStyleParameters {
     gradient: string[];
 };
 
+// const COLOR_SPAN_HEIGHT_FULL = [
+//     "rgba( 0 , 0 , 255, 0.9)",
+//     "rgba( 0 , 255 , 255, 0.9)",
+//     "rgba( 0 , 255 , 0, 0.9)",
+//     "rgba( 255 , 255 , 0, 0.9)",
+//     "rgba( 255 , 0 , 0, 0.9)"
+//     ]
+
 const COLOR_SPAN_HEIGHT = [
     "rgba( 0 , 0 , 255, 0.9)",
     "rgba( 0 , 255 , 255, 0.9)",
     "rgba( 0 , 255 , 0, 0.9)",
-    "rgba( 255 , 255 , 0, 0.9)",
-    "rgba( 255 , 0 , 0, 0.9)"
-    ]
+]
 
 const alpha = 1;
 const MESH_COLOR_SPAN_HEIGHT = [
     `rgba( 0 , 0 , 255, ${alpha})`,
     `rgba( 0 , 255 , 255, ${alpha})`,
     `rgba( 0 , 255 , 0, ${alpha})`,
-    `rgba( 255 , 255 , 0, ${alpha})`,
-    `rgba( 255 , 0 , 0, ${alpha})`
+    // `rgba( 255 , 255 , 0, ${alpha})`,
+    // `rgba( 255 , 0 , 0, ${alpha})`
 ]
 
 const COLOR_SPAN_INTENSITY = [
