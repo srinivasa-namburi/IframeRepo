@@ -28,7 +28,7 @@ dist-ssr
 .env.local
 .env.*.local
 
-*.tgz
+# *.tgz
 
 # # RIA license
 # **/luciadria_*.txt
